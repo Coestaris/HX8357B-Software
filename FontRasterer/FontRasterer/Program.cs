@@ -44,8 +44,8 @@ namespace FontRasterer
             var files =
                 CreateSequence(p => "rbmp" + (p++).ToString() + ".png", Directory.GetFiles(Environment.CurrentDirectory, "*.png").Length)
                 .ToArray();
-                
-                
+
+
             var bmps = new Bitmap[files.Length];
             for (int i = 0; i < files.Length; i++)
             {
@@ -67,7 +67,7 @@ namespace FontRasterer
             string result = "";
             result += $"#ifndef _font_{name}_h_\n";
             result += $"#define _font_{name}_h_\n\n";
-            result += "#include \"../ fontinfo.h\"\n\n";
+            result += "#include \"../fontinfo.h\"\n\n";
             result += $"const PROGMEM  uint8_t font_{name}_data[] = \n{{\n";
             result += $"    //Font Info. Symbol X size: {maxXSize}, Symbol Y size: {maxYSize}\n    //Stars from: {MinChar}, Ends with: {MaxChar}\n    //Total size: {Math.Ceiling(maxXSize * maxYSize / 8.0) * bmps.Length} bytes\n    ";
             foreach (var item in list)
@@ -379,14 +379,14 @@ namespace FontRasterer
 
     class Program
     {
-    
+
         static void Main(string[] args)
         {
             //Parser.Data = Font.fontData;
             //Parser.Parse(50);
 
-            
-            
+
+
             //Rasterizer.Rasterize();
             Rasterizer.Save();
 

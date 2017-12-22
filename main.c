@@ -20,9 +20,10 @@ int main(void)
   font.color = TFT_GREEN;
   gr_text_setPos(0, 0);
   gr_text_printStrCase(font, "\"Pack my box with five dozen\nliquor jugs\": According to\nWikipedia, this one is used on\nNASA's Space Shuttle.\n\n", 0);
+
+  font.color = TFT_RED;
+  font.bgColor = TFT_CYAN;
   gr_text_printStrCase(font, "\"Pack my box with five dozen\nliquor jugs\": According to\nWikipedia, this one is used on\nNASA's Space Shuttle.", 1);
-
-
 
   _delay_ms(2000);
 

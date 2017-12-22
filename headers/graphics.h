@@ -11,6 +11,7 @@
 #include "tft_hardware.h"
 
 #define swap(a,b) {uint16_t _loc_=a;a=b;b=_loc_;}
+#define PushColor(x) {PORTC=x;PORTA=x>>8;gr_h_WR_STB;}
 
 void gr_init(void);
 void gr_initPorts(void);
@@ -38,7 +39,7 @@ uint16_t gr_getHeight(void);
 extern uint16_t _width;
 extern uint16_t _height;
 
-#define betweenSymbolSpaceX 2
+#define betweenSymbolSpaceX 0
 #define betweenSymbolSpaceY 2
 
 //#define CLIP_CHECK

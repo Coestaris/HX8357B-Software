@@ -54,7 +54,13 @@ void gr_text_printChar(FONT_INFO info, uint8_t symbol)
           {
             yoffset = 0;
           } else yoffset += info.maxYSize;
-        } else offset += info.maxXSize + betweenSymbolSpaceX;
+        } else
+            {
+              gr_setAddrWindow(yoffset, offset, yoffset + info.maxYSize - 1, offset + info.maxXSize - 1);
+              for(int i = 0; i< info.maxYSize * info.maxYSize; i++)
+                PushColor(info.bgColor);
+              offset += info.maxXSize + betweenSymbolSpaceX;
+            }
         return;
       }
     else if(symbol == '\n')
@@ -84,8 +90,6 @@ void gr_text_printChar(FONT_INFO info, uint8_t symbol)
   else gr_text_print(info, symbol - info.startChar + 1);
 }
 
-#define PushColor(x) {PORTC=x;PORTA=x>>8;gr_h_WR_STB;}
-
 void gr_text_print(FONT_INFO info, uint8_t index)
 {
   uint16_t bits = info.maxXSize * info.maxYSize;
@@ -98,12 +102,11 @@ void gr_text_print(FONT_INFO info, uint8_t index)
     uint8_t byte = pgm_read_byte_near(memShift + i);
     for (uint8_t currentBit = 0; currentBit < 8; currentBit++)
     {
-      globalBit++;
-      if(globalBit > bits)
+      if(globalBit++ > bits)
         goto spacing;
-      if(bitw_bit(byte, currentBit) == 1)
+      if(bitw_bit(byte, currentBit))
         {PushColor(info.color);}
-      else PushColor(TFT_BLACK);
+      else PushColor(info.bgColor);
     }
   }
   spacing:

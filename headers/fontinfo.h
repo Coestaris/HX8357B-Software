@@ -16,6 +16,7 @@ typedef struct
   uint8_t endChar;
   uint16_t bytesPerSymbol;
   uint16_t color;
+  uint16_t bgColor;
   uint16_t data;
 } FONT_INFO;
 

@@ -1,7 +1,7 @@
 #ifndef _colors_h_
 #define _colors_h_
 
-#define TFT_BLACK       0x0000u
+#define TFT_BLACK       0x0000
 #define TFT_NAVY        0x000F
 #define TFT_DARKGREEN   0x03E0
 #define TFT_DARKCYAN    0x03EF
@@ -15,8 +15,8 @@
 #define TFT_CYAN        0x07FF
 #define TFT_RED         0xF800
 #define TFT_MAGENTA     0xF81F
-#define TFT_YELLOW      0xFFE0u
-#define TFT_WHITE       0xFFFFu
+#define TFT_YELLOW      0xFFE0
+#define TFT_WHITE       0xFFFF
 #define TFT_ORANGE      0xFD20
 #define TFT_GREENYELLOW 0xAFE5
 #define TFT_PINK        0xF81F
