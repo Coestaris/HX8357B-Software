@@ -47,22 +47,22 @@ void gr_text_printChar(FONT_INFO info, uint8_t symbol)
   {
     if(symbol == 32)
       {
-        if(offset + info.maxXSize + 1 >= _width)
+        if(offset + info.maxXSize + betweenSymbolSpaceX >= _width)
         {
           offset = 0;
-          if(yoffset + info.maxYSize + 1 >= _height)
+          if(yoffset + info.maxYSize + betweenSymbolSpaceY >= _height)
           {
             yoffset = 0;
           } else yoffset += info.maxYSize;
-        } else offset += info.maxXSize + 1;
+        } else offset += info.maxXSize + betweenSymbolSpaceX;
         return;
       }
     else if(symbol == '\n')
       {
-        if(yoffset + info.maxYSize + 1 >= _height)
+        if(yoffset + info.maxYSize + betweenSymbolSpaceY >= _height)
         {
           yoffset = 0;
-        } else yoffset += info.maxYSize + 1;
+        } else yoffset += info.maxYSize + betweenSymbolSpaceY;
         offset = 0;
         return;
       }
@@ -70,13 +70,13 @@ void gr_text_printChar(FONT_INFO info, uint8_t symbol)
       {
         for(uint8_t i = 0; i < ASCII_SpacesInTab; i++)
         {
-          if(offset + info.maxXSize + 1 >= _width)
+          if(offset + info.maxXSize + betweenSymbolSpaceX >= _width)
           {
             offset = 0;
-            if(yoffset + info.maxYSize + 1 >= _height)
+            if(yoffset + info.maxYSize + betweenSymbolSpaceY >= _height)
               yoffset = 0;
             else yoffset += info.maxYSize;
-          } else offset += info.maxXSize + 1;
+          } else offset += info.maxXSize + betweenSymbolSpaceX;
         }
         return;
       } else gr_text_print(info, 0);
@@ -107,11 +107,11 @@ void gr_text_print(FONT_INFO info, uint8_t index)
     }
   }
   spacing:
-  if(offset + info.maxXSize + 1 >= gr_getWidth())
+  if(offset + info.maxXSize + betweenSymbolSpaceX >= gr_getWidth())
     {
       offset = 0;
       yoffset += info.maxYSize;
-    } else offset += info.maxXSize + 1;
+    } else offset += info.maxXSize + betweenSymbolSpaceX;
 }
 
 void gr_fill(uint16_t color)

@@ -38,6 +38,9 @@ uint16_t gr_getHeight(void);
 extern uint16_t _width;
 extern uint16_t _height;
 
+#define betweenSymbolSpaceX 2
+#define betweenSymbolSpaceY 2
+
 //#define CLIP_CHECK
 
 #endif
