@@ -1,2 +1,9 @@
+#Atom files
 _other/
 .git/
+
+#Some VS files
+debug/
+bin/
+obj/
+.vs/
