@@ -10,7 +10,7 @@ void UART_Init(uint8_t ubrr)
 
 void UART_PrintChar(uint8_t c)
 {
-  UART_Transmit(c); 
+  UART_Transmit(c);
 }
 
 void UART_PrintlnChar(uint8_t c)
@@ -18,7 +18,6 @@ void UART_PrintlnChar(uint8_t c)
   UART_Transmit(c);
   UART_Transmit('\n');
 }
-
 
 void UART_Print(uint8_t * data)
 {

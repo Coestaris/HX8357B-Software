@@ -5,6 +5,14 @@ uint16_t _height = 0;
 uint16_t offset = 0;
 uint16_t yoffset = 0;
 
+void gr_setBrightness(uint8_t value)
+{
+  gr_writecommand(gr_c_setDisplayOff);
+  gr_writecommand(gr_c_setBrightness);
+  gr_writedata(value);
+  gr_writecommand(gr_c_setDisplayOn);
+}
+
 void gr_text_setCursor(FONT_INFO info, uint16_t x, uint16_t y)
 {
   offset = x * info.maxXSize;
@@ -119,10 +127,10 @@ void gr_text_print(FONT_INFO info, uint8_t index)
 
 void gr_fill(uint16_t color)
 {
-  gr_fillRect(0, 0, _height, _width, color);
+  gr_fillRect(0, 0, _width, _height, color);
 }
 
-void gr_fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
+void gr_fillRect(int16_t x, int16_t y, int16_t h, int16_t w, uint16_t color)
 {
 #ifdef CLIP_CHECK
   if ((x >= _width) || (y >= _height) || (w==0) || (h==0)) return;
@@ -315,6 +323,93 @@ void gr_init(void)
   _delay_ms(120);
   gr_writecommand(gr_c_setDisplayOn);
   _delay_ms(25);
+}
+
+uint16_t abs(uint16_t a)
+{
+  return a < 0 ? -a : a;
+}
+
+void gr_line(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t color)
+{
+    const int16_t deltaX = abs(x2 - x1);
+    const int16_t deltaY = abs(y2 - y1);
+    const int16_t signX = x1 < x2 ? 1 : -1;
+    const int16_t signY = y1 < y2 ? 1 : -1;
+    int16_t error = deltaX - deltaY;
+    gr_drawPixel(x2, y2,color);
+    while(x1 != x2 || y1 != y2)
+    {
+        gr_drawPixel(x1, y1, color);
+        const int error2 = error * 2;
+        //
+        if(error2 > -deltaY)
+        {
+            error -= deltaY;
+            x1 += signX;
+        }
+        if(error2 < deltaX)
+        {
+            error += deltaX;
+            y1 += signY;
+        }
+    }
+}
+
+void gr_fillCircle(int16_t x0, int16_t y0, int16_t radius, uint16_t color)
+{
+	int16_t x = 0;
+	int16_t y = radius;
+	int16_t delta = 1 - 2 * radius;
+	int16_t error = 0;
+	while(y >= 0) {
+    gr_line(x0 - x, y0 + y, x0 + x, y0 + y, color);
+    gr_line(x0 - x, y0 - y, x0 + x, y0 - y, color);
+		error = 2 * (delta + y) - 1;
+		if(delta < 0 && error <= 0) {
+			++x;
+			delta += 2 * x + 1;
+			continue;
+		}
+		error = 2 * (delta - x) - 1;
+		if(delta > 0 && error > 0) {
+			--y;
+			delta += 1 - 2 * y;
+			continue;
+		}
+		++x;
+		delta += 2 * (x - y);
+		--y;
+	}
+}
+
+void gr_drawCircle(int16_t x0, int16_t y0, int16_t radius, uint16_t color)
+{
+	int16_t x = 0;
+	int16_t y = radius;
+	int16_t delta = 1 - 2 * radius;
+	int16_t error = 0;
+	while(y >= 0) {
+		gr_drawPixel(x0 + x, y0 + y, color);
+		gr_drawPixel(x0 + x, y0 - y, color);
+		gr_drawPixel(x0 - x, y0 + y, color);
+		gr_drawPixel(x0 - x, y0 - y, color);
+		error = 2 * (delta + y) - 1;
+		if(delta < 0 && error <= 0) {
+			++x;
+			delta += 2 * x + 1;
+			continue;
+		}
+		error = 2 * (delta - x) - 1;
+		if(delta > 0 && error > 0) {
+			--y;
+			delta += 1 - 2 * y;
+			continue;
+		}
+		++x;
+		delta += 2 * (x - y);
+		--y;
+	}
 }
 
 void gr_drawPixel(uint16_t x, uint16_t y, uint16_t color)

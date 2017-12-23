@@ -65,6 +65,7 @@
 #define gr_c_setPixelFormat 0x3A
 #define gr_c_setPageAddress 0x2B
 #define gr_c_WriteRam 0x2C
+#define gr_c_setBrightness 0x51
 
 //orientations
 #define gr_MADCTL_MY  0x80

@@ -10,6 +10,7 @@
 #include "fontinfo.h"
 #include "tft_hardware.h"
 
+uint16_t abs(uint16_t a);
 #define swap(a,b) {uint16_t _loc_=a;a=b;b=_loc_;}
 #define PushColor(x) {PORTC=x;PORTA=x>>8;gr_h_WR_STB;}
 
@@ -25,11 +26,15 @@ void gr_text_print(FONT_INFO info, uint8_t index);
 void gr_text_setPos(uint16_t x, uint16_t y);
 void gr_text_setCursor(FONT_INFO info, uint16_t x, uint16_t y);
 
+void gr_line(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t color);
+void gr_fillCircle(int16_t x0, int16_t y0, int16_t radius, uint16_t color);
+void gr_drawCircle(int16_t x0, int16_t y0, int16_t radius, uint16_t color);
 void gr_fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 void gr_fill(uint16_t color);
 
 void gr_drawPixel(uint16_t x, uint16_t y, uint16_t color);
 
+void gr_setBrightness(uint8_t value);
 void gr_setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 void gr_setRotation(uint8_t m);
 
