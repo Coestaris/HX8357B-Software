@@ -795,7 +795,7 @@ FONT_INFO font_std(void)
     header.startChar = pgm_read_byte_near(header.data + 2);
     header.endChar = pgm_read_byte_near(header.data + 3);
     header.bytesPerSymbol = (uint16_t)ceil(header.maxXSize * header.maxYSize / 8.0);
-    header.color = TFT_BLUE;
+    header.color = cl_BLUE;
     return header;
 }
 

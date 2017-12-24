@@ -1,24 +1,26 @@
 #ifndef _colors_h_
 #define _colors_h_
 
-#define TFT_BLACK       0x0000
-#define TFT_NAVY        0x000F
-#define TFT_DARKGREEN   0x03E0
-#define TFT_DARKCYAN    0x03EF
-#define TFT_MAROON      0x7800
-#define TFT_PURPLE      0x780F
-#define TFT_OLIVE       0x7BE0
-#define TFT_LIGHTGREY   0xC618
-#define TFT_DARKGREY    0x7BEF
-#define TFT_BLUE        0x001F
-#define TFT_GREEN       0x07E0
-#define TFT_CYAN        0x07FF
-#define TFT_RED         0xF800
-#define TFT_MAGENTA     0xF81F
-#define TFT_YELLOW      0xFFE0
-#define TFT_WHITE       0xFFFF
-#define TFT_ORANGE      0xFD20
-#define TFT_GREENYELLOW 0xAFE5
-#define TFT_PINK        0xF81F
+#define cl_BLACK       0x0000
+#define cl_NAVY        0x000F
+#define cl_DARKGREEN   0x03E0
+#define cl_DARKCYAN    0x03EF
+#define cl_MAROON      0x7800
+#define cl_PURPLE      0x780F
+#define cl_OLIVE       0x7BE0
+#define cl_LIGHTGREY   0xC618
+#define cl_DARKGREY    0x7BEF
+#define cl_BLUE        0x001F
+#define cl_GREEN       0x07E0
+#define cl_CYAN        0x07FF
+#define cl_RED         0xF800
+#define cl_MAGENTA     0xF81F
+#define cl_YELLOW      0xFFE0
+#define cl_WHITE       0xFFFF
+#define cl_ORANGE      0xFD20
+#define cl_GREENYELLOW 0xAFE5
+#define cl_PINK        0xF81F
+
+#define cl_FromRGB(red,green,blue) ((uint16_t)((((31 * (red + 4)) / 255) << 11) | (((63 * (green + 2)) / 255) << 5) | ((31 * (blue + 4)) / 255)))
 
 #endif

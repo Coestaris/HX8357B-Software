@@ -125,26 +125,27 @@ void gr_text_print(FONT_INFO info, uint8_t index)
     } else offset += info.maxXSize + betweenSymbolSpaceX;
 }
 
-void gr_fill(uint16_t color)
+void gr_fill(color_t color)
 {
   gr_fillRect(0, 0, _width, _height, color);
 }
 
-void gr_fillRect(int16_t x, int16_t y, int16_t h, int16_t w, uint16_t color)
+void gr_fillRect(uint16_t y, uint16_t x, uint16_t height, uint16_t width, color_t color)
 {
-#ifdef CLIP_CHECK
+  /*#ifdef CLIP_CHECK
   if ((x >= _width) || (y >= _height) || (w==0) || (h==0)) return;
   if ((x + w - 1) >= _width)  w = _width  - x;
   if ((y + h - 1) >= _height) h = _height - y;
-#endif
-  gr_setAddrWindow(x, y, x+w-1, y+h-1);
+#endif*/
+  gr_setAddrWindow(x, y, x + width - 1, y + height - 1);
   PORTA = color>>8;
   PORTC = color;
-  if (h>w) swap(w,h);
-  if (w>15){
-    while(h--) {
-      x=w;
-      while (x>15) { x-=16;
+  if (height > width) swap(width, height);
+  if (width > 15){
+    while(height--) {
+      x = width;
+      while (x>15) {
+        x-=16;
         gr_h_WR_STB; gr_h_WR_STB; gr_h_WR_STB; gr_h_WR_STB;
         gr_h_WR_STB; gr_h_WR_STB; gr_h_WR_STB; gr_h_WR_STB;
         gr_h_WR_STB; gr_h_WR_STB; gr_h_WR_STB; gr_h_WR_STB;
@@ -157,10 +158,12 @@ void gr_fillRect(int16_t x, int16_t y, int16_t h, int16_t w, uint16_t color)
     }
   }
   else {
-    while(h--) {
-      x=w;
-      while(x--) { gr_h_WR_L;
-        gr_h_WR_H;}
+    while(height--) {
+      x = width;
+      while(x--) {
+        gr_h_WR_L;
+        gr_h_WR_H;
+      }
     }
   }
   gr_h_CS_H;
@@ -325,12 +328,34 @@ void gr_init(void)
   _delay_ms(25);
 }
 
+void gr_vline(uint16_t x, uint16_t y1, uint16_t y2, color_t color)
+{
+  if (y1 > y2) swap(y1, y2);
+  for(uint16_t y = y1; y < y2; y++)
+    gr_drawPixel(x, y, color);
+}
+
+void gr_hline(uint16_t y, uint16_t x1, uint16_t x2, color_t color)
+{
+  if (x1 > x2) swap(x1, x2);
+  for(uint16_t x = x1; x < x2; x++)
+    gr_drawPixel(x, y, color);
+}
+
+void gr_drawRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, color_t color)
+{
+  gr_vline(x,          y, y + height, color);
+  gr_vline(x + width,  y, y + height, color);
+  gr_hline(y,          x, x + width,  color);
+  gr_hline(y + height, x, x + width,  color);
+}
+
 uint16_t abs(uint16_t a)
 {
   return a < 0 ? -a : a;
 }
 
-void gr_line(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t color)
+void gr_line(int16_t x1, int16_t y1, int16_t x2, int16_t y2, color_t color)
 {
     const int16_t deltaX = abs(x2 - x1);
     const int16_t deltaY = abs(y2 - y1);
@@ -356,7 +381,7 @@ void gr_line(int16_t x1, int16_t y1, int16_t x2, int16_t y2, int16_t color)
     }
 }
 
-void gr_fillCircle(int16_t x0, int16_t y0, int16_t radius, uint16_t color)
+void gr_fillCircle(int16_t x0, int16_t y0, int16_t radius, color_t color)
 {
 	int16_t x = 0;
 	int16_t y = radius;
@@ -383,7 +408,7 @@ void gr_fillCircle(int16_t x0, int16_t y0, int16_t radius, uint16_t color)
 	}
 }
 
-void gr_drawCircle(int16_t x0, int16_t y0, int16_t radius, uint16_t color)
+void gr_drawCircle(int16_t x0, int16_t y0, int16_t radius, color_t color)
 {
 	int16_t x = 0;
 	int16_t y = radius;
@@ -412,7 +437,7 @@ void gr_drawCircle(int16_t x0, int16_t y0, int16_t radius, uint16_t color)
 	}
 }
 
-void gr_drawPixel(uint16_t x, uint16_t y, uint16_t color)
+void gr_drawPixel(uint16_t x, uint16_t y, color_t color)
 {
   gr_h_CS_L;
   gr_h_RS_L;
@@ -470,8 +495,8 @@ void gr_setRotation(uint8_t m)
      break;
    case 1: // Landscape (Portrait + 90)
      gr_writedata(gr_MADCTL_BGR | gr_MADCTL_MV);
-     _width  = gr_TFTHEIGHT;
-     _height = gr_TFTWIDTH;
+     _width  = gr_TFTWIDTH;
+     _height = gr_TFTHEIGHT;
      break;
    case 2: // Inverter portrait
      gr_writedata(gr_MADCTL_BGR | gr_MADCTL_MY);

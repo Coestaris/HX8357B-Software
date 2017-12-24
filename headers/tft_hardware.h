@@ -77,8 +77,8 @@
 #define gr_MADCTL_SS  0x02
 #define gr_MADCTL_GS  0x01
 
-#define gr_TFTWIDTH 320
-#define gr_TFTHEIGHT 480
+#define gr_TFTWIDTH 480
+#define gr_TFTHEIGHT 320
 
 #define gr_h_CS(x) bitw_sset(PORTG, 1, x)
 #define gr_h_WR(x) bitw_sset(PORTG, 2, x)

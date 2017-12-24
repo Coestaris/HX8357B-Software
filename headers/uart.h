@@ -20,14 +20,14 @@ void UART_Println(uint8_t * data);
 #define UART_PrintInt(c)\
 {\
   uint8_t arr[20];\
-  itoa(c, arr, 10);\
+  itoa((int)c, arr, 10);\
   UART_TransmitString(arr);\
 }
 
 #define UART_PrintlnInt(c) \
 {\
   uint8_t arr[20];\
-  itoa(c, arr, 10);\
+  itoa((int)c, arr, 10);\
   UART_TransmitString(arr);\
   UART_Transmit('\n');\
 }

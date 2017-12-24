@@ -1,9 +1,6 @@
 #include "avr/io.h"
-#include "avr/interrupt.h"
-#include "util/delay.h"
-#include "util/atomic.h"
 
-
+#include "headers/timing.h"
 #include "headers/uart.h"
 #include "headers/graphics.h"
 
@@ -11,192 +8,398 @@
 
 FONT_INFO font;
 
-#define CTC_MATCH_OVERFLOW ((F_CPU / 1000) / 8)
-volatile unsigned long timer1_millis;
-long milliseconds_since;
-
-ISR (TIMER1_COMPA_vect)
-{
-   timer1_millis++;
-}
-
-unsigned long millis ()
-{
-   unsigned long millis_return;
-
-   // Ensure this cannot be disrupted
-   ATOMIC_BLOCK(ATOMIC_FORCEON) {
-       millis_return = timer1_millis;
-   }
-
-   return millis_return;
-}
-
-void inittimer()
-{
-  // CTC mode, Clock/8
-  TCCR1B |= (1 << WGM12) | (1 << CS11);
-  // Load the high byte, then the low byte
-  // into the output compare
-  OCR1AH = (CTC_MATCH_OVERFLOW >> 8);
-  OCR1AL = CTC_MATCH_OVERFLOW;
-  // Enable the compare match interrupt
-  TIMSK1 |= (1 << OCIE1A);
-  sei();
-}
-
-void initgr()
+void initGr(void)
 {
   gr_init();
   gr_setRotation(1);
-  gr_fill(TFT_BLACK);
+  gr_fill(cl_BLACK);
+}
+
+void initGame(void)
+{
+  font = font_std();
+  initTimer();
+  initGr();
+  DDRH = 0;
+  gr_text_setPos(0,0);
+  font.bgColor = cl_BLACK;
+  font.color = cl_WHITE;
 }
 
 #define P1_L bitw_bit(PINH, 5)
 #define P1_R bitw_bit(PINH, 6)
-
-#define PLDX 2
-
-#define Height 90
-#define Width 30
-#define Y1 10
-#define Y2 440
-#define MinX 1
-#define MaxX 230
 #define P2_L bitw_bit(PINH, 4)
 #define P2_R bitw_bit(PINH, 3)
-
 #define betweenFrameDelay 10
+
+#define blockSpeed 50
 
 int main(void)
 {
-  font = font_std();
-  inittimer();
-  initgr();
-  DDRH = 0;
-  uint8_t p1Score = 0;
-  uint8_t p2Score = 0;
+  initGame();
   goto settinggame;
 
 endgame: ;
-  _delay_ms(2000);
+  _delay_ms(1000);
 
 settinggame:;
-  gr_fill(TFT_BLACK);
-  uint16_t x1 = gr_TFTWIDTH / 2 - Height / 2;
-  uint16_t x2 = gr_TFTWIDTH / 2 - Height / 2;
+  gr_fill(cl_BLACK);
+  int16_t figW = 20;
+  int16_t figH = 20;
+  gr_text_setPos(10, 60);
+  UART_Init(MYUBRR_DEF);
+  uint8_t map[24][16];
+  memset(map, 0, 24 * 16);
+  color_t colors[18] = {
+    cl_NAVY,
+    cl_DARKGREEN,
+    cl_DARKCYAN,
+    cl_MAROON,
+    cl_PURPLE,
+    cl_OLIVE,
+    cl_LIGHTGREY,
+    cl_DARKGREY,
+    cl_BLUE,
+    cl_GREEN,
+    cl_CYAN,
+    cl_RED,
+    cl_MAGENTA,
+    cl_YELLOW,
+    cl_WHITE,
+    cl_ORANGE,
+    cl_GREENYELLOW,
+    cl_PINK
+  };
 
-  int16_t ballX = gr_TFTHEIGHT / 2;
-  int16_t ballY = gr_TFTWIDTH / 2;
+  uint32_t last = 0;
 
-  int8_t sign = random() % 2;
-  int16_t dx = sign ? random() % 2 + 1 : -(random() % 2 + 1);
-  sign = random() % 2;
-  int16_t dy = sign ? random() % 2 + 1 : -(random() % 2 + 1);
+  newFig:;
+  int16_t figX = 20;
+  int16_t figY = random() % 13 + 1;
+  uint8_t color = random() % 16 + 1;
+  uint8_t type = random() % 3;
+  uint8_t rotate = random() % 4;
 
-  gr_text_setPos(0,0);
-  font.bgColor = TFT_BLACK;
-  font.color = TFT_WHITE;
-
-  uint8_t last = 0;
-
-  gr_fillRect(x1, Y1, Width, Height, TFT_WHITE);
-  gr_fillRect(x2, Y2, Width, Height, TFT_WHITE);
+  //rotate = 3;
+  //type = 2;
 
   while (1) {
-      unsigned long m1 = millis();
+      uint32_t m1 = millis();
       //Player 1 triggers
-      if(P1_L) if(x1 > MinX) {
-        if(P1_R) goto player2;
-        gr_fillRect(x1, Y1, Width, Height, TFT_BLACK);
-        x1-=PLDX;
-        gr_fillRect(x1, Y1, Width, Height, TFT_WHITE);
-      }
-      if(P1_R) if(x1 < MaxX)
-      {
-        gr_fillRect(x1, Y1, Width, Height, TFT_BLACK);
-        x1+=PLDX;
-        gr_fillRect(x1, Y1, Width, Height, TFT_WHITE);
-      }
 
-      player2:
-      //Player 2 triggers
-      if(P2_L) if(x2 > MinX) {
-        if(P2_R) goto ballrender;
-        gr_fillRect(x2, Y2, Width, Height, TFT_BLACK);
-        x2-=PLDX;
-        gr_fillRect(x2, Y2, Width, Height, TFT_WHITE);
-      }
-      if(P2_R) if(x2 < MaxX)
+      if(P1_L)
       {
-        gr_fillRect(x2, Y2, Width, Height, TFT_BLACK);
-        x2+=PLDX;
-        gr_fillRect(x2, Y2, Width, Height, TFT_WHITE);
-      }
-
-      ballrender:
-      if(ballX <= Y1 + Width)
-      {
-        if(x1 < ballY && x1 + Height > ballY) //In border
-          dx = - dx;
-        else {
-          p2Score++;
-          gr_text_setPos(0, 0);
-          gr_text_printStr(font, "Player 2 Wins\nrestarting in 2s");
-          goto endgame;
-        }
-      };
-
-      if(ballX >= Y2)
-      {
-        if(x2 < ballY && x2 + Height > ballY) //In border
-          dx = - dx;
-        else {
-          gr_text_setPos(0, 0);
-          gr_text_printStr(font, "Player 1 Wins\nrestarting in 2s");
-          p1Score++;
-          goto endgame;
+        uint32_t m1_2 = millis();
+        last = m1_2;
+        if(P1_R)
+          goto timing;
+        if(figY > 0)
+        {
+          if(type == 0)
+          {
+            gr_drawRect(figX * figW, figY * figH, figW * 2, figH * 2, cl_BLACK);
+            figY--;
+            gr_drawRect(figX * figW, figY * figH, figW * 2, figH * 2, cl_RED);
+            _delay_ms(50);
+          } else
+          if(type == 1)
+          {
+            switch (rotate) {
+              case 0:
+              case 3:
+              {
+                gr_drawRect(figX * figW, figY * figH, figW * 4, figH, cl_BLACK);
+                figY--;
+                gr_drawRect(figX * figW, figY * figH, figW * 4, figH, cl_RED);
+                _delay_ms(50);
+                break;
+              }
+              case 1:
+              case 2:
+              {
+                gr_drawRect(figX * figW, figY * figH, figW, figH * 4, cl_BLACK);
+                figY--;
+                gr_drawRect(figX * figW, figY * figH, figW, figH * 4, cl_RED);
+                _delay_ms(50);
+                break;
+              }
+            }
+          }
         }
       }
-
-      if(ballY >= gr_TFTWIDTH - 4 || ballY <= 0)
-        dy =- dy;
-
-      gr_drawCircle(ballX, ballY, 2, TFT_BLACK);
-
-      ballX += dx;
-      ballY += dy;
-
-      gr_drawCircle(ballX, ballY, 2, TFT_WHITE);
-
-      gr_line(gr_TFTHEIGHT / 2, 0, gr_TFTHEIGHT / 2, gr_TFTWIDTH, TFT_WHITE);
-
-      gr_text_setPos(gr_TFTHEIGHT / 2 - font.maxXSize - 1, 0);
-      gr_text_printChar(font, 48 + p1Score);
-
-      gr_text_setPos(gr_TFTHEIGHT / 2 + 2, 0);
-      gr_text_printChar(font, 48 + p2Score);
-
-      unsigned long m2 = millis();
-
-      if(m2 / 2000 - last)
+      if(P1_R)
       {
-        last = m2 / 2000;
-        if(dx < 0) dx--;
-        else dx++;
-
-        if(dy < 0) dy--;
-        dy++;
+        uint32_t m1_2 = millis();
+        last = m1_2;
+        if(type == 0)
+        {
+          if(figY < 14)
+          {
+            gr_drawRect(figX * figW, figY * figH, figW * 2, figH * 2, cl_BLACK);
+            figY++;
+            gr_drawRect(figX * figW, figY * figH, figW * 2, figH * 2, cl_RED);
+            _delay_ms(50);
+          }
+        } else
+        if(type == 1)
+        {
+          switch (rotate) {
+            case 0:
+            case 3:
+            {
+              if(figY < 15) {
+                gr_drawRect(figX * figW, figY * figH, figW * 4, figH, cl_BLACK);
+                figY++;
+                gr_drawRect(figX * figW, figY * figH, figW * 4, figH, cl_RED);
+                _delay_ms(50);
+              }
+              break;
+            }
+            case 1:
+            case 2:
+            {
+              if(figY < 12) {
+                gr_drawRect(figX * figW, figY * figH, figW, figH * 4, cl_BLACK);
+                figY++;
+                gr_drawRect(figX * figW, figY * figH, figW, figH * 4, cl_RED);
+              }
+              _delay_ms(50);
+              break;
+            }
+          }
+        }
       }
 
-      delay_ms((uint16_t)abs(betweenFrameDelay - m2 + m1));
+      uint32_t m1_1 = millis();
+      if(m1_1 - last >= blockSpeed)
+      {
+        last = m1_1;
+        if(type == 0)
+        {
+          gr_drawRect(figX * figW, figY * figH, figW * 2, figH * 2, cl_BLACK);
+
+          if(figX - 1 < 0)
+          {
+              map[figX][figY] = color;
+              map[figX][figY + 1] = color;
+              map[figX + 1][figY] = color;
+              map[figX + 1][figY + 1] = color;
+              goto redrawMap;
+          }
+
+          if(map[figX - 1][figY] ||
+             map[figX - 1][figY + 1])
+          {
+            map[figX][figY] = color;
+            map[figX][figY + 1] = color;
+            map[figX + 1][figY] = color;
+            map[figX + 1][figY + 1] = color;
+            goto redrawMap;
+          }
+
+          figX-= 1;
+          gr_drawRect(figX * figW, figY * figH, figW * 2, figH * 2, cl_RED);
+        } else
+        if(type == 1)
+        {
+          switch (rotate)
+          {
+            case 0:
+            case 3:
+            {
+              gr_drawRect(figX * figW, figY * figH, figW * 4, figH, cl_BLACK);
+              if(figX - 1 < 0)
+              {
+                map[figX][figY] = color;
+                map[figX + 1][figY] = color;
+                map[figX + 2][figY] = color;
+                map[figX + 3][figY] = color;
+                goto redrawMap;
+              }
+
+              if(map[figX - 1][figY])
+              {
+                map[figX][figY] = color;
+                map[figX + 1][figY] = color;
+                map[figX + 2][figY] = color;
+                map[figX + 3][figY] = color;
+                goto redrawMap;
+              }
+              figX-= 1;
+              gr_drawRect(figX * figW, figY * figH, figW * 4, figH, cl_RED);
+              break;
+            };
+            case 1:
+            case 2:
+            {
+              gr_drawRect(figX * figW, figY * figH, figW, figH * 4, cl_BLACK);
+              if(figX - 1 < 0)
+              {
+                map[figX][figY] = color;
+                map[figX][figY + 1] = color;
+                map[figX][figY + 2] = color;
+                map[figX][figY + 3] = color;
+                goto redrawMap;
+              }
+
+              if(map[figX - 1][figY] ||
+                 map[figX - 1][figY + 1] ||
+                 map[figX - 1][figY + 2] ||
+                 map[figX - 1][figY + 3])
+              {
+                map[figX][figY] = color;
+                map[figX][figY + 1] = color;
+                map[figX][figY + 2] = color;
+                map[figX][figY + 3] = color;
+                goto redrawMap;
+              }
+              figX-= 1;
+              gr_drawRect(figX * figW, figY * figH, figW, figH * 4, cl_RED);
+              break;
+            };
+          }
+        }
+        if(type == 2)
+        {
+          switch (rotate)
+          {
+            case 0:
+            {
+              gr_drawRect(figX * figW, figY * figH, figW * 3, figH, cl_BLACK);
+              gr_drawRect((figX + 1) * figW, (figY + 1) * figH, figW, figH, cl_BLACK);
+
+              if(figX - 1 < 0)
+              {
+                map[figX][figY] = color;
+                map[figX + 1][figY] = color;
+                map[figX + 2][figY] = color;
+                map[figX + 1][figY + 1] = color;
+                goto redrawMap;
+              }
+
+              if(map[figX - 1][figY] ||
+                 map[figX][figY + 1])
+              {
+                 map[figX][figY] = color;
+                 map[figX + 1][figY] = color;
+                 map[figX + 2][figY] = color;
+                 map[figX + 1][figY + 1] = color;
+                 goto redrawMap;
+               }
+
+              figX-= 1;
+              gr_drawRect(figX * figW, figY * figH, figW * 3, figH, cl_RED);
+              gr_drawRect((figX + 1) * figW, (figY + 1) * figH, figW, figH, cl_RED);
+              break;
+            }
+            case 1:
+            {
+              gr_drawRect(figX * figW, figY * figH, figW, figH * 3, cl_BLACK);
+              gr_drawRect((figX - 1) * figW, (figY + 1) * figH, figW, figH, cl_BLACK);
+              if(figX - 2 < 0)
+              {
+                map[figX][figY] = color;
+                map[figX - 1][figY + 1] = color;
+                map[figX][figY + 1] = color;
+                map[figX][figY + 2] = color;
+                goto redrawMap;
+              }
+              if(map[figX - 2][figY + 1] ||
+                 map[figX - 1][figY] ||
+                 map[figX - 1][figY + 2])
+              {
+                map[figX][figY] = color;
+                map[figX - 1][figY + 1] = color;
+                map[figX][figY + 1] = color;
+                map[figX][figY + 2] = color;
+                goto redrawMap;
+               }
+              figX-= 1;
+              gr_drawRect(figX * figW, figY * figH, figW, figH * 3, cl_RED);
+              gr_drawRect((figX - 1) * figW, (figY + 1) * figH, figW, figH, cl_RED);
+              break;
+            }
+            case 2:
+            {
+              gr_drawRect(figX * figW, figY * figH, figW * 3, figH, cl_BLACK);
+              gr_drawRect((figX + 1) * figW, (figY - 1) * figH, figW, figH, cl_BLACK);
+
+              if(figX - 1 < 0)
+              {
+                map[figX][figY] = color;
+                map[figX + 1][figY] = color;
+                map[figX + 2][figY] = color;
+                map[figX + 1][figY - 1] = color;
+                goto redrawMap;
+              }
+
+              if(map[figX - 1][figY] ||
+                 map[figX][figY - 1])
+              {
+                 map[figX][figY] = color;
+                 map[figX + 1][figY] = color;
+                 map[figX + 2][figY] = color;
+                 map[figX + 1][figY - 1] = color;
+                 goto redrawMap;
+               }
+
+              figX-= 1;
+              gr_drawRect(figX * figW, figY * figH, figW * 3, figH, cl_RED);
+              gr_drawRect((figX + 1) * figW, (figY - 1) * figH, figW, figH, cl_RED);
+              break;
+            }
+            case 3:
+            {
+              gr_drawRect(figX * figW, figY * figH, figW, figH * 3, cl_BLACK);
+              gr_drawRect((figX + 1) * figW, (figY + 1) * figH, figW, figH, cl_BLACK);
+              if(figX - 1 < 0)
+              {
+                map[figX][figY] = color;
+                map[figX + 1][figY + 1] = color;
+                map[figX][figY + 1] = color;
+                map[figX][figY + 2] = color;
+                goto redrawMap;
+              }
+              if(map[figX - 1][figY] ||
+                 map[figX - 1][figY + 1] ||
+                 map[figX - 1][figY + 2])
+              {
+                map[figX][figY] = color;
+                map[figX + 1][figY + 1] = color;
+                map[figX][figY + 1] = color;
+                map[figX][figY + 2] = color;
+                goto redrawMap;
+               }
+              figX-= 1;
+              gr_drawRect(figX * figW, figY * figH, figW, figH * 3, cl_RED);
+              gr_drawRect((figX + 1) * figW, (figY + 1) * figH, figW, figH, cl_RED);
+              break;
+            }
+          };
+        }
+      }
+
+      goto timing;
+
+      redrawMap:
+      for(uint8_t i = 0; i < 24; i++)
+      {
+        for(uint8_t bit = 0; bit < 16; bit++)
+        {
+          if(map[i][bit])
+          {
+            gr_fillRect(i * figW, bit * figH, figW, figH, colors[map[i][bit]]);
+            gr_drawRect(i * figW, bit * figH, figW, figH, cl_BLACK);
+          }
+        }
+      }
+      goto newFig;
+
+      timing:;
+      uint32_t m2 = millis();
+      int32_t newDelay = betweenFrameDelay - m2 + m1;
+      if(newDelay == 0)
+        continue;
+      delay_ms(newDelay < 0 ? - newDelay : newDelay);
   }
-}
-
-void delay_ms(uint16_t period)
-{
-    do
-    {
-        _delay_ms(1); //only takes constants
-    } while(--period);
 }
