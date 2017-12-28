@@ -331,15 +331,17 @@ void gr_init(void)
 void gr_vline(uint16_t x, uint16_t y1, uint16_t y2, color_t color)
 {
   if (y1 > y2) swap(y1, y2);
-  for(uint16_t y = y1; y < y2; y++)
-    gr_drawPixel(x, y, color);
+  gr_setAddrWindow(y1, x, y2, x);
+    for(uint16_t y = y1; y < y2; y++)
+      PushColor(color);
 }
 
 void gr_hline(uint16_t y, uint16_t x1, uint16_t x2, color_t color)
 {
   if (x1 > x2) swap(x1, x2);
-  for(uint16_t x = x1; x < x2; x++)
-    gr_drawPixel(x, y, color);
+  gr_setAddrWindow(y, x1, y, x2 - 1);
+    for(uint16_t x = x1; x < x2; x++)
+      PushColor(color);
 }
 
 void gr_drawRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, color_t color)
