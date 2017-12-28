@@ -12,7 +12,7 @@ void initGr(void)
 {
   gr_init();
   gr_setRotation(1);
-  gr_fill(TFT_BLACK);
+  gr_fill(cl_BLACK);
 }
 
 #define P1_L bitw_bit(PINH, 5)
@@ -34,7 +34,7 @@ int main(void)
 {
   font = font_std();
   initTimer();
-  initgr();
+  initGr();
   DDRH = 0;
   uint8_t p1Score = 0;
   uint8_t p2Score = 0;
@@ -44,7 +44,7 @@ endgame: ;
   _delay_ms(2000);
 
 settinggame:;
-  gr_fill(TFT_BLACK);
+  gr_fill(cl_BLACK);
   uint16_t x1 = gr_TFTWIDTH / 2 - Height / 2;
   uint16_t x2 = gr_TFTWIDTH / 2 - Height / 2;
 
@@ -57,43 +57,43 @@ settinggame:;
   int16_t dy = sign ? random() % 2 + 1 : -(random() % 2 + 1);
 
   gr_text_setPos(0,0);
-  font.bgColor = TFT_BLACK;
-  font.color = TFT_WHITE;
+  font.bgColor = cl_BLACK;
+  font.color = cl_WHITE;
 
   uint8_t last = 0;
 
-  gr_fillRect(x1, Y1, Width, Height, TFT_WHITE);
-  gr_fillRect(x2, Y2, Width, Height, TFT_WHITE);
+  gr_fillRect(x1, Y1, Width, Height, cl_WHITE);
+  gr_fillRect(x2, Y2, Width, Height, cl_WHITE);
 
   while (1) {
       uint32_t m1 = millis();
       //Player 1 triggers
       if(P1_L) if(x1 > MinX) {
         if(P1_R) goto player2;
-        gr_fillRect(x1, Y1, Width, Height, TFT_BLACK);
+        gr_fillRect(x1, Y1, Width, Height, cl_BLACK);
         x1-=PLDX;
-        gr_fillRect(x1, Y1, Width, Height, TFT_WHITE);
+        gr_fillRect(x1, Y1, Width, Height, cl_WHITE);
       }
       if(P1_R) if(x1 < MaxX)
       {
-        gr_fillRect(x1, Y1, Width, Height, TFT_BLACK);
+        gr_fillRect(x1, Y1, Width, Height, cl_BLACK);
         x1+=PLDX;
-        gr_fillRect(x1, Y1, Width, Height, TFT_WHITE);
+        gr_fillRect(x1, Y1, Width, Height, cl_WHITE);
       }
 
       player2:
       //Player 2 triggers
       if(P2_L) if(x2 > MinX) {
         if(P2_R) goto ballrender;
-        gr_fillRect(x2, Y2, Width, Height, TFT_BLACK);
+        gr_fillRect(x2, Y2, Width, Height, cl_BLACK);
         x2-=PLDX;
-        gr_fillRect(x2, Y2, Width, Height, TFT_WHITE);
+        gr_fillRect(x2, Y2, Width, Height, cl_WHITE);
       }
       if(P2_R) if(x2 < MaxX)
       {
-        gr_fillRect(x2, Y2, Width, Height, TFT_BLACK);
+        gr_fillRect(x2, Y2, Width, Height, cl_BLACK);
         x2+=PLDX;
-        gr_fillRect(x2, Y2, Width, Height, TFT_WHITE);
+        gr_fillRect(x2, Y2, Width, Height, cl_WHITE);
       }
 
       ballrender:
@@ -124,13 +124,13 @@ settinggame:;
       if(ballY >= gr_TFTWIDTH - 4 || ballY <= 0)
         dy =- dy;
 
-      gr_drawCircle(ballX, ballY, 2, TFT_BLACK);
+      gr_drawCircle(ballX, ballY, 2, cl_BLACK);
 
       ballX += dx;
       ballY += dy;
 
-      gr_drawCircle(ballX, ballY, 2, TFT_WHITE);
-      gr_line(gr_TFTHEIGHT / 2, 0, gr_TFTHEIGHT / 2, gr_TFTWIDTH, TFT_WHITE);
+      gr_drawCircle(ballX, ballY, 2, cl_WHITE);
+      gr_line(gr_TFTHEIGHT / 2, 0, gr_TFTHEIGHT / 2, gr_TFTWIDTH, cl_WHITE);
       gr_text_setPos(gr_TFTHEIGHT / 2 - font.maxXSize - 1, 0);
       gr_text_printChar(font, 48 + p1Score);
       gr_text_setPos(gr_TFTHEIGHT / 2 + 2, 0);

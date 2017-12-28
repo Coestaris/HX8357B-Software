@@ -38,7 +38,7 @@ OBJDIR = _other/.obj
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c graphics.c uart.c game_tetris.c
+SRC = $(TARGET).c graphics.c uart.c
 
 
 # List C++ source files here. (C dependencies are automatically generated.)

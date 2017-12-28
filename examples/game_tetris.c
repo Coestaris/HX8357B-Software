@@ -12,7 +12,10 @@ int16_t figY;
 uint8_t color;
 uint8_t type;
 uint8_t rotate;
+uint32_t state = 0;
 uint8_t map[24][16];
+uint32_t last = 0;
+
 const uint16_t colors[18] = {
   cl_NAVY,
   cl_DARKGREEN,
@@ -50,6 +53,7 @@ void initGame(void)
   initTimer();
   initGr();
   DDRH = 0;
+  srandom(state++);
   memset(map, 0, 24 * 16);
   UART_Init(MYUBRR_DEF);
   gr_text_setPos(0,0);
@@ -269,19 +273,87 @@ uint8_t isCollide(void)
             return 1;
           }
 
+          if(map[figX][figY + 2] ||
+             map[figX - 1][figY] ||
+             map[figX - 1][figY + 1])
+          {
+            apply();
+            return 1;
+          }
+        }
+        return 0;
+      }
+    }
+    case 4:
+    {
+      switch(rotate)
+      {
+        case 0:
+        {
+          if(figX - 1 < 0)
+          {
+            apply();
+            return 1;
+          }
+
+          if(map[figX - 1][figY] ||
+             map[figX + 1][figY + 1])
+          {
+            apply();
+            return 1;
+          }
+          return 0;
+        }
+        case 1:
+        {
+          if(figX - 1 < 0)
+          {
+            apply();
+            return 1;
+          }
+
+          if(map[figX][figY] ||
+             map[figX][figY + 1] ||
+             map[figX - 1][figY + 2])
+          {
+            apply();
+            return 1;
+          }
+          return 0;
+        }
+        case 2:
+        {
+          if(figX - 1 < 0)
+          {
+            apply();
+            return 1;
+          }
+
+          if(map[figX - 1][figY - 1] ||
+             map[figX - 1][figY])
+          {
+            apply();
+            return 1;
+          }
+          return 0;
+        }
+        case 3:
+        {
+          if(figX - 1 < 0)
+          {
+            apply();
+            return 1;
+          }
+
           if(map[figX - 1][figY] ||
              map[figX - 1][figY + 1] ||
-             map[figX][figY + 2])
+             map[figX - 1][figY + 2])
           {
             apply();
             return 1;
           }
         }
       }
-    }
-    case 4:
-    {
-      return 0;
     }
   }
 }
@@ -411,18 +483,401 @@ void apply(void)
         }
       }
     }
+    case 4:
+    {
+      switch(rotate)
+      {
+        case 0:
+        {
+          map[figX][figY] = color;
+          map[figX + 1][figY] = color;
+          map[figX + 2][figY] = color;
+          map[figX + 2][figY + 1] = color;
+          return;
+        }
+        case 1:
+        {
+          map[figX + 1][figY] = color;
+          map[figX + 1][figY + 1] = color;
+          map[figX + 1][figY + 2] = color;
+          map[figX][figY + 2] = color;
+          return;
+        }
+        case 2:
+        {
+          map[figX][figY - 1] = color;
+          map[figX][figY] = color;
+          map[figX + 1][figY] = color;
+          map[figX + 2][figY] = color;
+          return;
+        }
+        case 3:
+        {
+          map[figX][figY] = color;
+          map[figX][figY + 1] = color;
+          map[figX][figY + 2] = color;
+          map[figX + 1][figY] = color;
+          return;;
+        }
+      }
+    }
   }
 }
 
+#define proceedMove {\
+  draw(cl_BLACK);\
+  figY--;\
+  draw(cl_RED);\
+  _delay_ms(move_delay);\
+}\
+  last = millis();\
+
+#define proceedMoveR {\
+    draw(cl_BLACK);\
+    figY++;\
+    draw(cl_RED);\
+    _delay_ms(move_delay);\
+  }\
+    last = millis();\
+
 void ml(void)
 {
-
+  switch(type)
+  {
+    case 0:
+    {
+      switch(rotate)
+      {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        {
+          if(figY > 0 &&
+             !map[figX][figY - 1] &&
+             !map[figX - 1][figY - 1])
+              proceedMove;
+          return;
+        }
+      }
+    }
+    case 1:
+    {
+      switch(rotate)
+      {
+        case 0:
+        case 2:
+        {
+          if(figY > 0 &&
+             !map[figX][figY - 1] &&
+             !map[figX - 1][figY - 1] &&
+             !map[figX - 2][figY - 1] &&
+             !map[figX - 3][figY - 1])
+              proceedMove;
+          return;
+        }
+        case 1:
+        case 3:
+        {
+          if(figY > 0 &&
+             !map[figX][figY - 1])
+              proceedMove;
+          return;
+        }
+      }
+    }
+    case 2:
+    {
+      switch(rotate)
+      {
+        case 0:
+        {
+          if(figY > 0 &&
+             !map[figX + 1][figY - 1] &&
+             !map[figX][figY - 1] &&
+             !map[figX - 1][figY - 1])
+              proceedMove;
+          return;
+        }
+        case 1:
+        {
+          if(figY > 0 &&
+             !map[figX][figY - 1] &&
+             !map[figX - 1][figY])
+              proceedMove;
+          return;
+        }
+        case 2:
+        {
+          if(figY > 1 &&
+             !map[figX + 1][figY] &&
+             !map[figX][figY - 1] &&
+             !map[figX + 1][figY - 2])
+              proceedMove;
+          return;
+        }
+        case 3:
+        {
+          if(figY > 0 &&
+             !map[figX + 1][figY + 1] &&
+             !map[figX][figY - 1])
+              proceedMove;
+          return;
+        }
+      }
+    }
+    case 3:
+    {
+      switch(rotate)
+      {
+        case 0:
+        {
+          if(figY > 0 &&
+             !map[figX + 2][figY] &&
+             !map[figX + 1][figY - 1] &&
+             !map[figX][figY - 1])
+              proceedMove;
+          return;
+        }
+        case 1:
+        {
+          if(figY > 0 &&
+             !map[figX + 1][figY - 1] &&
+             !map[figX][figY])
+              proceedMove;
+          return;
+        }
+        case 2:
+        {
+          if(figY > 1 &&
+             !map[figX + 2][figY - 2] &&
+             !map[figX + 1][figY - 2] &&
+             !map[figX][figY - 1])
+              proceedMove;
+          return;
+        }
+        case 3:
+        {
+          if(figY > 0 &&
+             !map[figX + 1][figY] &&
+             !map[figX][figY - 1])
+              proceedMove;
+          return;
+        }
+      }
+    }
+    case 4:
+    {
+      switch(rotate)
+      {
+        case 0:
+        {
+          if(figY > 0 &&
+             !map[figX + 2][figY - 1] &&
+             !map[figX + 1][figY - 1] &&
+             !map[figX][figY - 1])
+              proceedMove;
+          return;
+        }
+        case 1:
+        {
+          if(figY > 0 &&
+             !map[figX + 1][figY - 1] &&
+             !map[figX][figY + 1])
+              proceedMove;
+          return;
+        }
+        case 2:
+        {
+          if(figY > 1 &&
+             !map[figX + 2][figY + 1] &&
+             !map[figX + 1][figY + 1] &&
+             !map[figX][figY - 2  ])
+              proceedMove;
+          return;
+        }
+        case 3:
+        {
+          if(figY > 0 &&
+             !map[figX + 1][figY - 1] &&
+             !map[figX][figY - 1])
+              proceedMove;
+          return;
+        }
+      }
+    }
+  }
 }
 
 void mr(void)
 {
-
+  switch(type)
+  {
+    case 0:
+    {
+      switch(rotate)
+      {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        {
+          if(figY < 14 &&
+             !map[figX + 1][figY + 2] &&
+             !map[figX][figY + 2])
+              proceedMoveR;
+          return;
+        }
+      }
+    }
+    case 1:
+    {
+      switch(rotate)
+      {
+        case 0:
+        case 2:
+        {
+          if(figY < 15 &&
+             !map[figX][figY + 1] &&
+             !map[figX + 1][figY + 1] &&
+             !map[figX + 2][figY + 1] &&
+             !map[figX + 3][figY + 1])
+              proceedMoveR;
+          return;
+        }
+        case 1:
+        case 3:
+        {
+          if(figY < 12 &&
+             !map[figX][figY + 4])
+              proceedMoveR;
+          return;
+        }
+      }
+    }
+    case 2:
+    {
+      switch(rotate)
+      {
+        case 0:
+        {
+          if(figY < 14 &&
+            !map[figX + 2][figY + 1] &&
+            !map[figX + 1][figY + 2] &&
+            !map[figX][figY + 1])
+              proceedMoveR;
+          return;
+        }
+        case 1:
+        {
+          if(figY < 13 &&
+             !map[figX][figY + 3] &&
+             !map[figX - 1][figY + 2])
+              proceedMoveR;
+          return;
+        }
+        case 2:
+        {
+          if(figY < 15 &&
+             !map[figX + 2][figY + 1] &&
+             !map[figX + 1][figY + 1] &&
+             !map[figX][figY + 1])
+              proceedMoveR;
+          return;
+        }
+        case 3:
+        {
+          if(figY < 13 &&
+             !map[figX + 1][figY + 2] &&
+             !map[figX][figY + 3])
+              proceedMoveR;
+          return;
+        }
+      }
+    }
+    case 3:
+    {
+      switch(rotate)
+      {
+        case 0:
+        {
+          if(figY < 14 &&
+             !map[figX + 2][figY + 2] &&
+             !map[figX + 1][figY + 2] &&
+             !map[figX][figY + 1])
+              proceedMoveR;
+          return;
+        }
+        case 1:
+        {
+          if(figY < 13 &&
+             !map[figX + 1][figY + 2] &&
+             !map[figX][figY + 3])
+              proceedMoveR;
+          return;
+        }
+        case 2:
+        {
+          if(figY < 15 &&
+             !map[figX + 2][figY] &&
+             !map[figX + 1][figY + 1] &&
+             !map[figX][figY + 1])
+              proceedMoveR;
+          return;
+        }
+        case 3:
+        {
+          if(figY < 13 &&
+             !map[figX + 1][figY + 3] &&
+             !map[figX][figY + 2])
+              proceedMoveR;
+          return;
+        }
+      }
+    }
+    case 4:
+    {
+      switch(rotate)
+      {
+        case 0:
+        {
+          if(figY < 14 &&
+             !map[figX + 2][figY + 2] &&
+             !map[figX + 1][figY + 1] &&
+             !map[figX][figY + 1])
+              proceedMoveR;
+          return;
+        }
+        case 1:
+        {
+          if(figY < 13 &&
+             !map[figX + 1][figY + 3] &&
+             !map[figX][figY + 3])
+              proceedMoveR;
+          return;
+        }
+        case 2:
+        {
+          if(figY < 15 &&
+             !map[figX + 2][figY + 1] &&
+             !map[figX + 1][figY + 1] &&
+             !map[figX][figY + 1])
+              proceedMoveR;
+          return;
+        }
+        case 3:
+        {
+          if(figY < 13 &&
+             !map[figX + 1][figY + 1] &&
+             !map[figX][figY + 3])
+              proceedMoveR;
+          return;
+        }
+      }
+    }
+  }
 }
+
 
 void draw(color_t color)
 {
@@ -566,21 +1021,26 @@ void game_routine(void)
 {
   initGame();
   goto settingGame;
-
-endgame: ;
+endgame:;
   _delay_ms(1000);
-
+  srandom(state++);
+  memset(map, 0, 24 * 16);
 settingGame:;
   gr_fill(cl_BLACK);
   gr_text_setPos(10, 60);
-  uint32_t last = 0;
+  last = 0;
 newFig:;
   figX = 20;
   figY = random() % 13 + 1;
   color = random() % 16 + 1;
-  //type = random() % 3;
-  type = 3;
-  rotate = 3;
+
+  type = random() % 5;
+  rotate = random() % 4;
+
+  //type = 3;
+  //rotate = 2;
+
+  uint8_t first = 1;
 
   while(1)
   {
@@ -589,7 +1049,11 @@ newFig:;
     if(P1_L)
     {
       if(P1_R)
-        goto redrawMap;
+      {
+        //draw(cl_BLACK);
+        _delay_ms(move_delay);
+        goto timing;
+      }
       ml();
     }
     if(P1_R)
@@ -597,6 +1061,18 @@ newFig:;
       mr();
     }
 
+    if(P2_L)
+    {
+      draw(cl_BLACK);
+      if(rotate >= 3)
+        rotate = 0;
+      else rotate++;
+        rot(rotate);
+      draw(cl_RED);
+
+      _delay_ms(120);
+      goto timing;
+    }
     //PROCEEDING BLOCKS
     uint32_t m1_1 = millis();
     if(m1_1 - last >= blockSpeed)
@@ -604,9 +1080,17 @@ newFig:;
       last = m1_1;
         draw(cl_BLACK);
       if(isCollide())
+      {
+        if(first)
+          {
+            draw(cl_GREEN);
+            goto endgame;
+          }
         goto redrawMap;
+      }
       else
       {
+        first = 0;
         figX--;
         draw(cl_RED);
       }

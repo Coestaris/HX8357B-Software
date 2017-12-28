@@ -19,10 +19,11 @@ void initGr(void);
 #define P1_R bitw_bit(PINH, 6)
 #define P2_L bitw_bit(PINH, 4)
 #define P2_R bitw_bit(PINH, 3)
-#define betweenFrameDelay 10
-#define blockSpeed 60
+#define betweenFrameDelay 10 //100 fps!!
+#define blockSpeed 100
 #define figW 20
 #define figH 20
+#define move_delay 30
 
 #endif
 
