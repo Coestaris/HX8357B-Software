@@ -23,10 +23,10 @@ namespace FontRasterer
         public static string Font { get; set; } = "Courier";
         //public static string OutputName { get; set; } = "output1.h";
         public static bool SaveImages { get; set; } = true;
-        public static string OutputImagesFormat { get; set; } = "img\\{0}.png";
+        public static string OutputImagesFormat { get; set; } = "rbmp{0}.png";
         public static bool SaveTotalImage { get; set; } = true;
         public static bool TotalImageBorders { get; set; } = true;
-        public static string OutputTotalImageFormat { get; set; } = "img\\_img_.png";
+        public static string OutputTotalImageFormat { get; set; } = "img/_img_.png";
         public static int TotalImagePerRow { get; set; } = 20;
 
         public static IEnumerable<T> CreateSequence<T>(Func<int, T> elementCreator, int count)
@@ -42,7 +42,7 @@ namespace FontRasterer
         {
             string OutputName = string.Format("font_{0}.h", name);
             var files =
-                CreateSequence(p => "rbmp" + (p++).ToString() + ".png", Directory.GetFiles(Environment.CurrentDirectory, "*.png").Length)
+                CreateSequence(p => "rbmp" + (p++).ToString() + ".png", Directory.GetFiles(Environment.CurrentDirectory, "rbm*.png").Length)
                 .ToArray();
 
 
@@ -163,6 +163,10 @@ namespace FontRasterer
                                 gr.DrawLine(Pens.Gray, 0, i * maxYSize, total.Width, i * maxYSize);
                         }
                     }
+
+					if(Directory.Exists(OutputTotalImageFormat.Split('/')[0]))
+						Directory.CreateDirectory(OutputTotalImageFormat.Split('/')[0]);
+
                     total.Save(OutputTotalImageFormat);
                 }
                 File.WriteAllText(OutputName, result);
@@ -284,116 +288,59 @@ namespace FontRasterer
         public int endChar;
     }
 
-    public static class Parser
+	class Program
     {
-        public static bool SaveImages { get; set; } = true;
-        public static string OutputImagesFormat { get; set; } = "im2\\{0}.png";
 
-        public static bool SaveTotalImage { get; set; } = true;
-        public static bool TotalImageBorders { get; set; } = true;
-        public static string OutputTotalImageFormat { get; set; } = "im2\\_img_.png";
-        public static int TotalImagePerRow { get; set; } = 20;
-        public static byte[] Data { get; set; }
+		public static string Found(string name, object defValue)
+		{
+			if(arguments.ContainsKey(name.ToLower()))
+				return arguments[name].ToString();
+			else return defValue.ToString();
+		}
 
-        public static void Parse(int index)
-        {
-            FontHeader header;
-            header.maxXSize = Data[0];
-            header.maxYSize = Data[1];
-            header.startChar = Data[2];
-            header.endChar = Data[3];
-
-            int bitCount = header.maxXSize * header.maxYSize;
-            int bytesPerSybmol = (int)Math.Ceiling(bitCount / 8.0);
-
-            Bitmap bmp = new Bitmap(header.maxXSize, header.maxYSize);
-
-            int startByte = 4 + index * bytesPerSybmol;
-            int currentBit = 0;
-
-            for (int x = 0; x < bmp.Width; x++)
-                for (int y = 0; y < bmp.Height; y++)
-                {
-                    //Console.WriteLine($"[{currentBit % 8}]/[{offset + (int)Math.Ceiling((currentBit + 1)/ 8.0)}]");
-                    var value = Data[startByte + currentBit / 8];
-                    bmp.SetPixel(x, y, ((value >> currentBit % 8) & 1) == 0 ? Color.White : Color.Black);
-                    currentBit++;
-                }
-            bmp.Save("asd.png");
-        }
-
-        public static void Parse()
-        {
-            FontHeader header;
-            header.maxXSize = Data[0];
-            header.maxYSize = Data[1];
-            header.startChar = Data[2];
-            header.endChar = Data[3];
-
-            int bitCount = header.maxXSize * header.maxYSize;
-            int bytesPerSybmol = (int)Math.Ceiling(bitCount / 8.0);
-            int currentBit = 0;
-
-            Bitmap[] bmps = new Bitmap[header.endChar - header.startChar];
-            for (int i = 0; i < bmps.Length; i++)
-                bmps[i] = new Bitmap(header.maxXSize, header.maxYSize);
-
-            int offset = 4;
-            for (int i = 0; i < bmps.Length - 1; i++)
-            {
-                for (int x = 0; x < bmps[i].Width; x++)
-                    for (int y = 0; y < bmps[i].Height; y++)
-                    {
-                        //Console.WriteLine($"[{currentBit % 8}]/[{offset + (int)Math.Ceiling((currentBit + 1)/ 8.0)}]");
-                        var value = Data[offset + currentBit / 8];
-                        bmps[i].SetPixel(x, y, ((value >> currentBit % 8) & 1) == 0 ? Color.White : Color.Black);
-                        currentBit++;
-                    }
-                Console.WriteLine($"[{i}/{bmps.Length}]");
-                offset += bytesPerSybmol;
-                currentBit = 0;
-                if(SaveImages)
-                    bmps[i].Save(string.Format(OutputImagesFormat, i));
-            }
-
-            if (SaveTotalImage)
-            {
-                Bitmap total = new Bitmap(header.maxXSize * TotalImagePerRow, header.maxYSize * (int)Math.Ceiling(bmps.Length / (float)TotalImagePerRow));
-                using (Graphics gr = Graphics.FromImage(total))
-                {
-                    for (int i = 0; i <= bmps.Length - 1; i++)
-                        gr.DrawImage(bmps[i], new Point(header.maxXSize * (i % TotalImagePerRow), header.maxYSize * (i / TotalImagePerRow)));
-                    if (TotalImageBorders)
-                    {
-                        for (int i = 0; i < TotalImagePerRow; i++)
-                            gr.DrawLine(Pens.Gray, i * header.maxXSize, 0, i * header.maxXSize, total.Height);
-
-                        for (int i = 0; i < (int)Math.Ceiling(bmps.Length / (float)TotalImagePerRow); i++)
-                            gr.DrawLine(Pens.Gray, 0, i * header.maxYSize, total.Width, i * header.maxYSize);
-                    }
-                }
-                total.Save(OutputTotalImageFormat);
-            }
-        }
-    }
-
-    class Program
-    {
+		public static Dictionary<string, object> arguments;
 
         static void Main(string[] args)
         {
-            //Parser.Data = Font.fontData;
-            //Parser.Parse(50);
+			arguments = new Dictionary<string, object>();
 
+			foreach (var item in args)
+			{
+				arguments.Add(item.Split(':')[0].TrimStart('-').ToLower(), item.Split(':')[1]);
+			}
 
+			foreach (var item in arguments)
+				Console.WriteLine(item.ToString());
 
-            //Rasterizer.Rasterize();
-            Rasterizer.Save();
+			Rasterizer.name = Found("name", "std");
+			Rasterizer.W = int.Parse(Found("W", 100));
+			Rasterizer.H = int.Parse(Found("H", 100));
+			Rasterizer.FSize = float.Parse(Found("FSize", 16));
+			Rasterizer.Format_MaxBytes = int.Parse(Found("Format_MaxBytes", 10));
+			Rasterizer.MinChar = int.Parse(Found("MinChar", 33));
+			Rasterizer.MaxChar = int.Parse(Found("MaxChar", 161));
+			Rasterizer.EptyCharIndex = int.Parse(Found("EptyCharIndex", 63));
+			Rasterizer.Font = Found("Font", "Courier");
+			Rasterizer.SaveImages = bool.Parse(Found("SaveImages", true));
+			Rasterizer.OutputImagesFormat = Found("OutputImagesFormat", "rbmp{0}.png");
+			Rasterizer.SaveTotalImage = bool.Parse(Found("SaveTotalImage", true));
+			Rasterizer.TotalImageBorders = bool.Parse(Found("TotalImageBorders", true));
+			Rasterizer.OutputTotalImageFormat = Found("OutputTotalImageFormat", "img/_img_.png");
+			Rasterizer.TotalImagePerRow = int.Parse(Found("TotalImagePerRow", 20));
 
-            //Console.WriteLine("DONE!\nPress any key to continue . . .");
-            //Console.ReadKey();
+			int mode = int.Parse(Found("mode", 0));
 
+			switch(mode)
+			{
+				case 0:
+					Rasterizer.Save();
+					break;
+				case 1:
+					Rasterizer.Rasterize();
+					break;
 
+			}
+			Console.WriteLine();
         }
     }
 }

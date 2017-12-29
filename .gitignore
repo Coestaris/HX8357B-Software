@@ -3,6 +3,8 @@ _other/
 .git/
 
 #Some VS files
+*.save
+*.userprefs
 debug/
 bin/
 obj/
