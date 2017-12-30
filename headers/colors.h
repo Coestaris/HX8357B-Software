@@ -21,6 +21,7 @@
 #define cl_GREENYELLOW 0xAFE5
 #define cl_PINK        0xF81F
 
+#define cl_random random() % 0xFFFF
 #define cl_FromRGB(red,green,blue) ((uint16_t)((((31 * (red + 4)) / 255) << 11) | (((63 * (green + 2)) / 255) << 5) | ((31 * (blue + 4)) / 255)))
 
 #endif
