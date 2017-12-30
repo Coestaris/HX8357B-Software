@@ -5,6 +5,56 @@ uint16_t _height = 0;
 uint16_t offset = 0;
 uint16_t yoffset = 0;
 
+void gr_switchDisplay(uint8_t value)
+{
+  gr_writecommand(value ? gr_c_setDisplayOn : gr_c_setDisplayOff);
+}
+
+void gr_invertColors(uint8_t value)
+{
+  gr_writecommand(value ? gr_c_enterInversionMode : gr_c_exitInversionMode);
+}
+
+void gr_scroll(uint16_t start, uint16_t tfa, uint16_t vsa, uint16_t bfa)
+{
+  gr_h_CS_L;
+  gr_h_RS_L;
+  PORTC = gr_c_setScrollStart;
+  gr_h_WR_STB;
+  gr_h_RS_H;
+  PORTC = start>>8;
+  gr_h_WR_STB;
+  PORTC = start;
+  gr_h_WR_STB;
+  gr_h_RS_L;
+
+  gr_h_CS_L;
+  gr_h_RS_L;
+  PORTC = gr_c_setScrollArea;
+  gr_h_WR_STB;
+  gr_h_RS_H;
+  PORTC = tfa>>8;
+  gr_h_WR_STB;
+  PORTC = tfa;
+  gr_h_WR_STB;
+
+  PORTC = vsa>>8;
+  gr_h_WR_STB;
+  PORTC = vsa;
+  gr_h_WR_STB;
+
+  PORTC = bfa>>8;
+  gr_h_WR_STB;
+  PORTC = bfa;
+  gr_h_WR_STB;
+
+  gr_h_RS_L;
+
+  //gr_writecommand(gr_c_setScrollStart);
+  //gr_writedata(start >> 8);
+  //gr_writedata(start >> 8);
+}
+
 void gr_setBrightness(uint8_t value)
 {
   gr_writecommand(gr_c_setDisplayOff);
@@ -332,16 +382,20 @@ void gr_vline(uint16_t x, uint16_t y1, uint16_t y2, color_t color)
 {
   if (y1 > y2) swap(y1, y2);
   gr_setAddrWindow(y1, x, y2, x);
+  PORTC = color;
+  PORTA = color>>8;
     for(uint16_t y = y1; y < y2; y++)
-      PushColor(color);
+      gr_h_WR_STB;
 }
 
 void gr_hline(uint16_t y, uint16_t x1, uint16_t x2, color_t color)
 {
   if (x1 > x2) swap(x1, x2);
   gr_setAddrWindow(y, x1, y, x2 - 1);
+  PORTC = color;
+  PORTA = color>>8;
     for(uint16_t x = x1; x < x2; x++)
-      PushColor(color);
+      gr_h_WR_STB;
 }
 
 void gr_drawRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, color_t color)
@@ -369,7 +423,6 @@ void gr_line(int16_t x1, int16_t y1, int16_t x2, int16_t y2, color_t color)
     {
         gr_drawPixel(x1, y1, color);
         const int error2 = error * 2;
-        //
         if(error2 > -deltaY)
         {
             error -= deltaY;
@@ -390,8 +443,11 @@ void gr_fillCircle(int16_t x0, int16_t y0, int16_t radius, color_t color)
 	int16_t delta = 1 - 2 * radius;
 	int16_t error = 0;
 	while(y >= 0) {
+    //gr_hline(y0 + y, x0 - x, x0 + x, color);
+    //gr_hline(y0 - y, x0 - x, x0 + x, color);
     gr_line(x0 - x, y0 + y, x0 + x, y0 + y, color);
     gr_line(x0 - x, y0 - y, x0 + x, y0 - y, color);
+
 		error = 2 * (delta + y) - 1;
 		if(delta < 0 && error <= 0) {
 			++x;

@@ -67,6 +67,11 @@
 #define gr_c_WriteRam 0x2C
 #define gr_c_setBrightness 0x51
 
+#define gr_c_enterInversionMode 0x21
+#define gr_c_exitInversionMode 0x20
+#define gr_c_setScrollStart 0x37
+#define gr_c_setScrollArea 0x33
+
 //orientations
 #define gr_MADCTL_MY  0x80
 #define gr_MADCTL_MX  0x40
@@ -91,7 +96,7 @@
 #define gr_h_CS_L bitw_clear(PORTG,1)
 #define gr_h_WR_H bitw_set(PORTG, 2)
 #define gr_h_WR_L bitw_clear(PORTG, 2)
-#define gr_h_WR_STB gr_h_WR_L;gr_h_WR_H
+#define gr_h_WR_STB {gr_h_WR_L;gr_h_WR_H;}
 
 #define gr_h_DB15(x) bitw_sset(PORTA, 7, x)
 #define gr_h_DB14(x) bitw_sset(PORTA, 6, x)
