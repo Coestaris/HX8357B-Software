@@ -18,7 +18,7 @@ namespace FontRasterer
         public static int Format_MaxBytes { get; set; } = 10;
         public static int MinChar { get; set; } = 0x21;
         public static int MaxChar { get; set; } = 161;
-        public static int EptyCharIndex { get; set; } = 0x3F;
+        public static int EmptyCharIndex { get; set; } = 0x3F;
         //public static string Font { get; set; } = "DisposableDroid BB";
         public static string Font { get; set; } = "Courier";
         //public static string OutputName { get; set; } = "output1.h";
@@ -42,7 +42,7 @@ namespace FontRasterer
         {
             string OutputName = string.Format("font_{0}.h", name);
             var files =
-                CreateSequence(p => "rbmp" + (p++).ToString() + ".png", Directory.GetFiles(Environment.CurrentDirectory, "rbm*.png").Length)
+                CreateSequence(p => "rbmp" + (p++).ToString() + ".png", Directory.GetFiles(Environment.CurrentDirectory, OutputImagesFormat.Replace("{0}", "*")).Length)
                 .ToArray();
 
 
@@ -81,10 +81,10 @@ namespace FontRasterer
                     byte[] bytes = new byte[(int)Math.Ceiling(maxXSize * maxYSize / 8.0)];
                     int currBit = 0;
 
-                    for (int y = 0; y < bmps[MinChar + EptyCharIndex].Height; y++)
-                        for (int x = 0; x < bmps[MinChar + EptyCharIndex].Width; x++)
+                    for (int y = 0; y < bmps[MinChar + EmptyCharIndex].Height; y++)
+                        for (int x = 0; x < bmps[MinChar + EmptyCharIndex].Width; x++)
                         {
-                            var col = bmps[MinChar + EptyCharIndex].GetPixel(x, y);
+                            var col = bmps[MinChar + EmptyCharIndex].GetPixel(x, y);
                             if (col.G == 0)
                                 bytes[currBit / 8] |= (byte)(1UL << (byte)(currBit % 8));
                             currBit++;
@@ -262,11 +262,10 @@ namespace FontRasterer
                                                          (maxYSize - bmps[i].Height) / 2));
                     }
                     progress.Report(0.5 + i / (bmps.Length / 2.0));
-                    bmp.Save($"rbmp{i}.png");
+                    if (SaveImages)
+                        bmps[i].Save(string.Format(OutputImagesFormat, i));
                     bmps[i] = bmp;
 
-                    //if (SaveImages)
-                        //bmps[i].Save(string.Format(OutputImagesFormat, i));
                 }
             }
         }
@@ -278,14 +277,6 @@ namespace FontRasterer
                 return y - max;
             return y;
         }
-    }
-
-    struct FontHeader
-    {
-        public int maxXSize;
-        public int maxYSize;
-        public int startChar;
-        public int endChar;
     }
 
 	class Program
@@ -319,7 +310,7 @@ namespace FontRasterer
 			Rasterizer.Format_MaxBytes = int.Parse(Found("Format_MaxBytes", 10));
 			Rasterizer.MinChar = int.Parse(Found("MinChar", 33));
 			Rasterizer.MaxChar = int.Parse(Found("MaxChar", 161));
-			Rasterizer.EptyCharIndex = int.Parse(Found("EptyCharIndex", 63));
+			Rasterizer.EmptyCharIndex = int.Parse(Found("EmptyCharIndex", 63));
 			Rasterizer.Font = Found("Font", "Courier");
 			Rasterizer.SaveImages = bool.Parse(Found("SaveImages", true));
 			Rasterizer.OutputImagesFormat = Found("OutputImagesFormat", "rbmp{0}.png");

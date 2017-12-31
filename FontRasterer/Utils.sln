@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2008
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FontRasterer", "FontRasterer\FontRasterer.csproj", "{255B68A3-E6C2-4BC6-9E0E-530DB3E1C8E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitmapConverter", "BitmapConverter\BitmapConverter.csproj", "{19405F1A-5C6D-492B-9BB4-083E2387BE39}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{255B68A3-E6C2-4BC6-9E0E-530DB3E1C8E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{255B68A3-E6C2-4BC6-9E0E-530DB3E1C8E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{255B68A3-E6C2-4BC6-9E0E-530DB3E1C8E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19405F1A-5C6D-492B-9BB4-083E2387BE39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19405F1A-5C6D-492B-9BB4-083E2387BE39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19405F1A-5C6D-492B-9BB4-083E2387BE39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19405F1A-5C6D-492B-9BB4-083E2387BE39}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

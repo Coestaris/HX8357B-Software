@@ -4,6 +4,7 @@ _other/
 
 #Some VS files
 *.save
+*.user
 *.userprefs
 debug/
 bin/
