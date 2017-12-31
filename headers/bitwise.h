@@ -3,18 +3,19 @@
 
 #define logicalOne 1
 
-//Set bit xth bit in n as 1
+//Sets bit xth bit in n as 1
 #define bitw_set(n,x) n |= logicalOne << x
 
-//Set bit xth bit in n as 0
+//Sets bit xth bit in n as 0
 #define bitw_clear(n,x) n &= ~(logicalOne << x);
 
-//Inverse xth bit in n
+//Inverses xth bit in n
 #define bitw_inverse(n,x) n ^= logicalOne << x
 
-//Get xth bit in n
+//Gets xth bit in n
 #define bitw_bit(n,x) (n >> x) & logicalOne
 
+//Sets xth bit in n to b
 #define bitw_sset(n,x,b) n ^= (- b ^ n) & (logicalOne << x)
 
 #endif

@@ -7,6 +7,8 @@
 
 #define CTC_MATCH_OVERFLOW ((F_CPU / 1000) / 8)
 
+char chars[10];
+uint32_t m1, m2;
 volatile uint32_t timer1_millis;
 
 ISR (TIMER1_COMPA_vect)
@@ -38,6 +40,41 @@ void delay_ms(uint32_t period)
     {
         _delay_ms(1); //only takes constants
     } while(--period);
+}
+
+void timing_mark(void)
+{
+  m1 = millis();
+}
+
+void timing_markSecond(void)
+{
+  m2 = millis();
+}
+
+char * timing_marksDelta_str(void)
+{
+  memset(chars, 0, 10);
+  itoa((int)(m2 - m1), chars, 10);
+  return chars;
+}
+
+uint32_t timing_marksDelta(void)
+{
+  return m2 - m1;
+}
+
+uint32_t timing_delta(void)
+{
+  return millis() - m1;
+}
+
+char * timing_delta_str(void)
+{
+  memset(chars, 0, 10);
+  uint32_t delta = millis() - m1;
+  itoa((int)delta, chars, 10);
+  return chars;
 }
 
 #endif

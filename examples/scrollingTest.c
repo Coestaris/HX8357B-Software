@@ -25,9 +25,9 @@ int main(void)
     int x = random() % 470 + 10;
     int y = random() % 310 + 10;
 
-    int r = min(min(min(480 - x, x), min(320 - y, y)), 40);
+    int r = min(min(min(480 - x, x), min(320 - y, y)), 40) - 1;
 
-    gr_fillCircle(x, y, r, cl_random);
+    gr_fillCircle(x, y, r, cl_randomTrue);
   }
 
   while (1) for(uint16_t i = 0; i < 480; i++)

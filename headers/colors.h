@@ -21,7 +21,13 @@
 #define cl_GREENYELLOW 0xAFE5
 #define cl_PINK        0xF81F
 
-#define cl_random random() % 0xFFFF
+//Returns random color.
+#define cl_random (random() % 0xFFFF)
+
+//Returns random color with evenly distributed chance for each channel.
+#define cl_randomTrue (cl_FromRGB(random() % 255, random() % 255, random() % 255))
+
+//Converts default 24-bit 8.8.8 RGB color to 16-bit 5.6.5 color
 #define cl_FromRGB(red,green,blue) ((uint16_t)((((31 * (red + 4)) / 255) << 11) | (((63 * (green + 2)) / 255) << 5) | ((31 * (blue + 4)) / 255)))
 
 #endif

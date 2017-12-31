@@ -384,7 +384,7 @@ void gr_vline(uint16_t x, uint16_t y1, uint16_t y2, color_t color)
   gr_setAddrWindow(y1, x, y2, x);
   PORTC = color;
   PORTA = color>>8;
-    for(uint16_t y = y1; y < y2; y++)
+    for(; y1 < y2; y1++)
       gr_h_WR_STB;
 }
 
@@ -394,7 +394,7 @@ void gr_hline(uint16_t y, uint16_t x1, uint16_t x2, color_t color)
   gr_setAddrWindow(y, x1, y, x2 - 1);
   PORTC = color;
   PORTA = color>>8;
-    for(uint16_t x = x1; x < x2; x++)
+    for(; x1 < x2; x1 ++)
       gr_h_WR_STB;
 }
 
@@ -443,11 +443,8 @@ void gr_fillCircle(int16_t x0, int16_t y0, int16_t radius, color_t color)
 	int16_t delta = 1 - 2 * radius;
 	int16_t error = 0;
 	while(y >= 0) {
-    //gr_hline(y0 + y, x0 - x, x0 + x, color);
-    //gr_hline(y0 - y, x0 - x, x0 + x, color);
-    gr_line(x0 - x, y0 + y, x0 + x, y0 + y, color);
-    gr_line(x0 - x, y0 - y, x0 + x, y0 - y, color);
-
+    gr_hline(y0 + y, x0 - x, x0 + x, color);
+    gr_hline(y0 - y, x0 - x, x0 + x, color);
 		error = 2 * (delta + y) - 1;
 		if(delta < 0 && error <= 0) {
 			++x;
