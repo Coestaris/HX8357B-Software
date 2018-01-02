@@ -38,8 +38,17 @@ void delay_ms(uint32_t period)
 {
     do
     {
-        _delay_ms(1); //only takes constants
-    } while(--period);
+      if(period > 50)
+      {
+        period-=50;
+        _delay_ms(50);
+        continue;
+      }
+
+      period--;
+      _delay_ms(1);
+    } 
+    while(period);
 }
 
 void timing_mark(void)

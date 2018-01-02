@@ -42,9 +42,11 @@ namespace FontRasterer
         {
             string OutputName = string.Format("font_{0}.h", name);
             var files =
-                CreateSequence(p => "rbmp" + (p++).ToString() + ".png", Directory.GetFiles(Environment.CurrentDirectory, OutputImagesFormat.Replace("{0}", "*")).Length)
+                CreateSequence(p => //"rbmp" + (p++).ToString() + ".png",
+                OutputImagesFormat.Replace("{0}", p++.ToString()),
+                Directory.GetFiles(Environment.CurrentDirectory, OutputImagesFormat.Replace("{0}", "*")).Length)
                 .ToArray();
-
+			//var l = OutputImagesFormat.Replace("{0}", "*");
 
             var bmps = new Bitmap[files.Length];
             for (int i = 0; i < files.Length; i++)
@@ -135,18 +137,19 @@ namespace FontRasterer
                 result += $"FONT_INFO font_{name}(void)\n";
                 result += "{\n";
                 result += "    FONT_INFO header;\n";
-                result +=$"    header.data = (uint16_t)font_{name}_data;\n";
-                result += "    header.maxXSize = pgm_read_byte_near(header.data);\n";
-                result += "    header.maxYSize = pgm_read_byte_near(header.data + 1);\n";
-                result += "    header.startChar = pgm_read_byte_near(header.data + 2);\n";
-                result += "    header.endChar = pgm_read_byte_near(header.data + 3);\n";
+                result += $"    header.data = (uint16_t)font_{name}_data;\n";
+				result += $"    header.maxXSize = {bmps[0].Width};\n";
+				result += $"    header.maxYSize = {bmps[0].Height};\n";
+				result += $"    header.startChar = {MaxChar};\n";
+				result += $"    header.endChar = {MinChar};\n";
                 result += "    header.bytesPerSymbol = (uint16_t)ceil(header.maxXSize * header.maxYSize / 8.0);\n";
-                result += "    header.color = TFT_BLUE;\n";
+                result += "    header.color = cl_WHITE;\n";
+				result += "    header.bgColor = cl_BLACK;\n";
                 result += "    return header;\n";
                 result += "}\n\n";
 
 
-                result += "#endif";
+                result += "#endif\n";
                 if (SaveTotalImage)
                 {
                     Bitmap total = new Bitmap(maxXSize * TotalImagePerRow, maxYSize * (int)Math.Ceiling(bmps.Length / (float)TotalImagePerRow));
@@ -250,7 +253,7 @@ namespace FontRasterer
                         using (Graphics gr = Graphics.FromImage(bmp_))
                             gr.FillRectangle(Brushes.White, 0, 0, maxXSize, maxYSize);
                         bmps[i] = bmp_;
-                        bmp_.Save($"rbmp{i}.png");
+						bmp_.Save(string.Format(OutputImagesFormat,i));
                         continue;
                     }
 
@@ -262,20 +265,12 @@ namespace FontRasterer
                                                          (maxYSize - bmps[i].Height) / 2));
                     }
                     progress.Report(0.5 + i / (bmps.Length / 2.0));
-                    if (SaveImages)
-                        bmps[i].Save(string.Format(OutputImagesFormat, i));
                     bmps[i] = bmp;
+					if (SaveImages)
+						bmps[i].Save(string.Format(OutputImagesFormat, i));
 
                 }
             }
-        }
-
-        static int st(int y, int max)
-        {
-            y += max / 2 - 1;
-            if (y >= max)
-                return y - max;
-            return y;
         }
     }
 
@@ -285,7 +280,7 @@ namespace FontRasterer
 		public static string Found(string name, object defValue)
 		{
 			if(arguments.ContainsKey(name.ToLower()))
-				return arguments[name].ToString();
+				return arguments[name.ToLower()].ToString();
 			else return defValue.ToString();
 		}
 
@@ -296,12 +291,10 @@ namespace FontRasterer
 			arguments = new Dictionary<string, object>();
 
 			foreach (var item in args)
-			{
 				arguments.Add(item.Split(':')[0].TrimStart('-').ToLower(), item.Split(':')[1]);
-			}
 
-			foreach (var item in arguments)
-				Console.WriteLine(item.ToString());
+			//foreach (var item in arguments)
+				//Console.WriteLine(item.ToString());
 
 			Rasterizer.name = Found("name", "std");
 			Rasterizer.W = int.Parse(Found("W", 100));
@@ -328,6 +321,10 @@ namespace FontRasterer
 					break;
 				case 1:
 					Rasterizer.Rasterize();
+					break;
+				case 2:
+					Rasterizer.Rasterize();
+					Rasterizer.Save();
 					break;
 
 			}
