@@ -29,7 +29,36 @@ namespace FontRasterer
         public static string OutputTotalImageFormat { get; set; } = "img/_img_.png";
         public static int TotalImagePerRow { get; set; } = 20;
 
-        public static IEnumerable<T> CreateSequence<T>(Func<int, T> elementCreator, int count)
+
+		private static Bitmap[] bmps;
+		private static int maxXSize;
+		private static int maxYSize;
+
+		public static void Load()
+		{
+			var files =
+				CreateSequence(p => //"rbmp" + (p++).ToString() + ".png",
+					OutputImagesFormat.Replace("{0}", p++.ToString()),
+					Directory.GetFiles(Environment.CurrentDirectory, OutputImagesFormat.Replace("{0}", "*")).Length)
+					.ToArray();
+
+			bmps = new Bitmap[files.Length];
+			for (int i = 0; i < files.Length; i++)
+			{
+				bmps[i] = new Bitmap(files[i]);
+			};
+			maxXSize = bmps[0].Width;
+			maxYSize = bmps[0].Height;
+		}
+
+		private static string Normalize(string str, int a)
+		{
+			while (str.Length != a + 1)
+				str += ' ';
+			return str;
+		}
+
+		private static IEnumerable<T> CreateSequence<T>(Func<int, T> elementCreator, int count)
         {
             if (elementCreator == null)
                 throw new ArgumentNullException("elementCreator");
@@ -38,23 +67,48 @@ namespace FontRasterer
                 yield return (elementCreator(i));
         }
 
+		public static void SaveTotal()
+		{
+			Bitmap total = null;
+			if(bmps.Length <= TotalImagePerRow)
+			{
+				total = new Bitmap(maxXSize * bmps.Length, maxYSize * (int)Math.Ceiling(bmps.Length / (float)TotalImagePerRow));
+				using (Graphics gr = Graphics.FromImage(total))
+				{
+					for(int i = 0; i < bmps.Length; i++)
+					{
+						gr.DrawImage(bmps[i], new Point(maxXSize * i, 0));
+						if (TotalImageBorders)
+							gr.DrawLine(Pens.Gray, i * maxXSize, 0, i * maxXSize, total.Height);
+					}
+				}
+			}
+			else
+			{
+				total = new Bitmap(maxXSize * TotalImagePerRow, maxYSize * (int)Math.Ceiling(bmps.Length / (float)TotalImagePerRow));
+				using (Graphics gr = Graphics.FromImage(total))
+				{
+					for (int i = 0; i <= bmps.Length - 1; i++)
+						gr.DrawImage(bmps[i], new Point(maxXSize * (i % TotalImagePerRow), maxYSize * (i / TotalImagePerRow)));
+					if (TotalImageBorders)
+					{
+						for (int i = 0; i < TotalImagePerRow; i++)
+							gr.DrawLine(Pens.Gray, i * maxXSize, 0, i * maxXSize, total.Height);
+
+						for (int i = 0; i < (int)Math.Ceiling(bmps.Length / (float)TotalImagePerRow); i++)
+							gr.DrawLine(Pens.Gray, 0, i * maxYSize, total.Width, i * maxYSize);
+					}
+				}
+			}
+			if(Directory.Exists(OutputTotalImageFormat.Split('/')[0]))
+				Directory.CreateDirectory(OutputTotalImageFormat.Split('/')[0]);
+
+			total.Save(OutputTotalImageFormat);
+		}
+
         public static void Save()
         {
-            string OutputName = string.Format("font_{0}.h", name);
-            var files =
-                CreateSequence(p => //"rbmp" + (p++).ToString() + ".png",
-                OutputImagesFormat.Replace("{0}", p++.ToString()),
-                Directory.GetFiles(Environment.CurrentDirectory, OutputImagesFormat.Replace("{0}", "*")).Length)
-                .ToArray();
-			//var l = OutputImagesFormat.Replace("{0}", "*");
-
-            var bmps = new Bitmap[files.Length];
-            for (int i = 0; i < files.Length; i++)
-            {
-                bmps[i] = new Bitmap(files[i]);
-            };
-            var maxXSize = bmps[0].Width;
-            var maxYSize = bmps[0].Height;
+			Load();
 
             List<byte> list = new List<byte>
             {
@@ -73,7 +127,7 @@ namespace FontRasterer
             result += $"const PROGMEM  uint8_t font_{name}_data[] = \n{{\n";
             result += $"    //Font Info. Symbol X size: {maxXSize}, Symbol Y size: {maxYSize}\n    //Stars from: {MinChar}, Ends with: {MaxChar}\n    //Total size: {Math.Ceiling(maxXSize * maxYSize / 8.0) * bmps.Length} bytes\n    ";
             foreach (var item in list)
-                result += "0x" + item.ToString("x").ToUpper() + ", ";
+				result += Normalize("0x" + item.ToString("x").ToUpper(), 3) + ", ";
             result += "\n\n";
 
             using (var progress = new ProgressBar())
@@ -83,10 +137,10 @@ namespace FontRasterer
                     byte[] bytes = new byte[(int)Math.Ceiling(maxXSize * maxYSize / 8.0)];
                     int currBit = 0;
 
-                    for (int y = 0; y < bmps[MinChar + EmptyCharIndex].Height; y++)
-                        for (int x = 0; x < bmps[MinChar + EmptyCharIndex].Width; x++)
+                    for (int y = 0; y < bmps[0].Height; y++)
+                        for (int x = 0; x < bmps[0].Width; x++)
                         {
-                            var col = bmps[MinChar + EmptyCharIndex].GetPixel(x, y);
+							var col = bmps[EmptyCharIndex - MinChar].GetPixel(x, y);
                             if (col.G == 0)
                                 bytes[currBit / 8] |= (byte)(1UL << (byte)(currBit % 8));
                             currBit++;
@@ -96,7 +150,7 @@ namespace FontRasterer
                     {
                         if (currBit++ % Format_MaxBytes == 0)
                             result += "\n    ";
-                        result += "0x" + item.ToString("x").ToUpper() + ", ";
+						result += Normalize("0x" + item.ToString("x").ToUpper(), 3) + ", ";
                     }
                     result += "\n\n";
                     list.AddRange(bytes);
@@ -125,7 +179,7 @@ namespace FontRasterer
                     {
                         if (currBit++ % Format_MaxBytes == 0)
                             result += "\n    ";
-                        result += "0x" + item.ToString("x").ToUpper() + ", ";
+						result += Normalize("0x" + item.ToString("x").ToUpper(), 3) + ", ";
                     }
                     result += "\n\n";
 
@@ -151,41 +205,19 @@ namespace FontRasterer
 
                 result += "#endif\n";
                 if (SaveTotalImage)
-                {
-                    Bitmap total = new Bitmap(maxXSize * TotalImagePerRow, maxYSize * (int)Math.Ceiling(bmps.Length / (float)TotalImagePerRow));
-                    using (Graphics gr = Graphics.FromImage(total))
-                    {
-                        for (int i = 0; i <= bmps.Length - 1; i++)
-                            gr.DrawImage(bmps[i], new Point(maxXSize * (i % TotalImagePerRow), maxYSize * (i / TotalImagePerRow)));
-                        if (TotalImageBorders)
-                        {
-                            for (int i = 0; i < TotalImagePerRow; i++)
-                                gr.DrawLine(Pens.Gray, i * maxXSize, 0, i * maxXSize, total.Height);
-
-                            for (int i = 0; i < (int)Math.Ceiling(bmps.Length / (float)TotalImagePerRow); i++)
-                                gr.DrawLine(Pens.Gray, 0, i * maxYSize, total.Width, i * maxYSize);
-                        }
-                    }
-
-					if(Directory.Exists(OutputTotalImageFormat.Split('/')[0]))
-						Directory.CreateDirectory(OutputTotalImageFormat.Split('/')[0]);
-
-                    total.Save(OutputTotalImageFormat);
-                }
-                File.WriteAllText(OutputName, result);
+					SaveTotal();
+				File.WriteAllText(string.Format("font_{0}.h", name), result);
             }
         }
 
         public static void Rasterize()
         {
-            string OutputName = string.Format("font_{0}.h", name);
             Bitmap[] bmps = new Bitmap[MaxChar - MinChar];
             Console.Write("1. Rendering... ");
             using (var progress = new ProgressBar()) for (int m = MinChar; m < MaxChar; m++)
             {
                 progress.Report(m / (double)(MaxChar - MinChar));
                 var bitmap = new Bitmap(W, H);
-                var path = new GraphicsPath();
                 bool[,] colors = new bool[W, H];
                 System.Drawing.Font ff = new System.Drawing.Font(new FontFamily(Font), FSize, FontStyle.Regular);
                 using (Graphics gr = Graphics.FromImage(bitmap))
@@ -325,6 +357,10 @@ namespace FontRasterer
 				case 2:
 					Rasterizer.Rasterize();
 					Rasterizer.Save();
+					break;
+				case 3:
+					Rasterizer.Load();
+					Rasterizer.SaveTotal();
 					break;
 
 			}
