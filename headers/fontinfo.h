@@ -10,6 +10,8 @@
 
 typedef struct
 {
+  uint8_t encoded;
+
   uint8_t maxXSize;
   uint8_t maxYSize;
   uint8_t startChar;

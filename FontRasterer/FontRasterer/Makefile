@@ -10,6 +10,9 @@ HEIGHT = 10
 #Font size
 FSIZE = 16
 
+#Use RLE compression 
+ENCODING = true
+
 #How many bytes will be in row
 MAX_BYTES_IN_ROW = 10
 
@@ -58,6 +61,7 @@ FLAGS += -SaveTotalImage:$(SAVE_TOTAL_IMAGE)
 FLAGS += -TotalImageBorders:$(SAVE_TOTAL_IMAGE_BORDERS)
 FLAGS += -OutputTotalImageFormat:$(SAVE_TOTAL_IMAGE_NAMEFORMAT)
 FLAGS += -TotalImagePerRow:$(SAVE_TOTAL_IMAGE_IMGPEROW)
+FLAGS += -Encoding:$(ENCODING)
 
 PROGRAM = ./FontRasterer.exe
 
