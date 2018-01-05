@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace FontRasterer
 {
@@ -12,6 +13,7 @@ namespace FontRasterer
     {
         public static string name = "std";
 
+        public static bool Encoding {get; set;}  = false;
         public static int W { get; set; } = 100;
         public static int H { get; set; } = 100;
         public static float FSize { get; set; } = 16;
@@ -28,8 +30,7 @@ namespace FontRasterer
         public static bool TotalImageBorders { get; set; } = true;
         public static string OutputTotalImageFormat { get; set; } = "img/_img_.png";
         public static int TotalImagePerRow { get; set; } = 20;
-
-
+        
 		private static Bitmap[] bmps;
 		private static int maxXSize;
 		private static int maxYSize;
@@ -37,35 +38,35 @@ namespace FontRasterer
 		public static void Load()
 		{
 			var files =
-				CreateSequence(p => //"rbmp" + (p++).ToString() + ".png",
+				Program.CreateSequence(p => //"rbmp" + (p++).ToString() + ".png",
 					OutputImagesFormat.Replace("{0}", p++.ToString()),
 					Directory.GetFiles(Environment.CurrentDirectory, OutputImagesFormat.Replace("{0}", "*")).Length)
 					.ToArray();
 
+            if(files.Length == 0)
+            {
+                Console.WriteLine("Unable to find any files at \"{0}\"\nPress any key to continue. . .", OutputImagesFormat.Replace("{0}", "*"));
+                Console.ReadKey();
+                Environment.Exit(1);
+            }
+
 			bmps = new Bitmap[files.Length];
 			for (int i = 0; i < files.Length; i++)
 			{
-				bmps[i] = new Bitmap(files[i]);
+                try
+                {
+                    bmps[i] = new Bitmap(files[i]);
+                }
+                catch(ArgumentException)
+                {
+                    Console.WriteLine("Unable to open file \"{0}\"\nPress any key to continue. . .", files[i]);
+                    Console.ReadKey();
+                    Environment.Exit(1);
+                }
 			};
 			maxXSize = bmps[0].Width;
 			maxYSize = bmps[0].Height;
 		}
-
-		private static string Normalize(string str, int a)
-		{
-			while (str.Length != a + 1)
-				str += ' ';
-			return str;
-		}
-
-		private static IEnumerable<T> CreateSequence<T>(Func<int, T> elementCreator, int count)
-        {
-            if (elementCreator == null)
-                throw new ArgumentNullException("elementCreator");
-
-            for (int i = 0; i < count; ++i)
-                yield return (elementCreator(i));
-        }
 
 		public static void SaveTotal()
 		{
@@ -109,60 +110,28 @@ namespace FontRasterer
         public static void Save()
         {
 			Load();
-
-            List<byte> list = new List<byte>
-            {
-                (byte)maxXSize,
-                (byte)maxYSize,
-                (byte)MinChar,
-                (byte)MaxChar
-            };
-            Console.WriteLine("Done");
-            Console.Write("3. Writing...   ");
-            //Console.WriteLine("...Creating output file...");
-            string result = "";
-            result += $"#ifndef _font_{name}_h_\n";
-            result += $"#define _font_{name}_h_\n\n";
-            result += "#include \"../fontinfo.h\"\n\n";
-            result += $"const PROGMEM  uint8_t font_{name}_data[] = \n{{\n";
-            result += $"    //Font Info. Symbol X size: {maxXSize}, Symbol Y size: {maxYSize}\n    //Stars from: {MinChar}, Ends with: {MaxChar}\n    //Total size: {Math.Ceiling(maxXSize * maxYSize / 8.0) * bmps.Length} bytes\n    ";
-            foreach (var item in list)
-				result += Normalize("0x" + item.ToString("x").ToUpper(), 3) + ", ";
-            result += "\n\n";
-
+            Console.Write("3. Preparing...   ");
+            FontData Data = new FontData();
             using (var progress = new ProgressBar())
             {
                 {
-                    result += $"    //Symbol for unrecognised chars. ";
                     byte[] bytes = new byte[(int)Math.Ceiling(maxXSize * maxYSize / 8.0)];
                     int currBit = 0;
-
                     for (int y = 0; y < bmps[0].Height; y++)
                         for (int x = 0; x < bmps[0].Width; x++)
                         {
-							var col = bmps[EmptyCharIndex - MinChar].GetPixel(x, y);
+                            var col = bmps[EmptyCharIndex - MinChar].GetPixel(x, y);
                             if (col.G == 0)
                                 bytes[currBit / 8] |= (byte)(1UL << (byte)(currBit % 8));
                             currBit++;
                         }
-                    currBit = 0;
-                    foreach (var item in bytes)
-                    {
-                        if (currBit++ % Format_MaxBytes == 0)
-                            result += "\n    ";
-						result += Normalize("0x" + item.ToString("x").ToUpper(), 3) + ", ";
-                    }
-                    result += "\n\n";
-                    list.AddRange(bytes);
+                    Data.Elems.Add(new CATEl((char)EmptyCharIndex, true, bytes.ToList(), EmptyCharIndex - MinChar));
                 }
 
                 for (int i = 0; i <= bmps.Length - 1; i++)
                 {
-                    result += $"    //Symbol: {i + MinChar} {(!char.IsControl((char)(i + MinChar)) ? $" or '{(char)(i + MinChar)}'" : "")}. Symbol Index: {i}";
-
                     byte[] bytes = new byte[(int)Math.Ceiling(maxXSize * maxYSize / 8.0)];
                     int currBit = 0;
-
                     for (int y = 0; y < bmps[i].Height; y++)
                         for (int x = 0; x < bmps[i].Width; x++)
                         {
@@ -172,42 +141,33 @@ namespace FontRasterer
                             currBit++;
                         }
                     currBit = 0;
-                    //Console.WriteLine($"[{i}/{bmps.Length}]");
                     progress.Report(i / (double)bmps.Length);
-                    //char.IsSymbol(i + minChar);
-                    foreach (var item in bytes)
-                    {
-                        if (currBit++ % Format_MaxBytes == 0)
-                            result += "\n    ";
-						result += Normalize("0x" + item.ToString("x").ToUpper(), 3) + ", ";
-                    }
-                    result += "\n\n";
-
-
-                    list.AddRange(bytes);
+                    Data.Elems.Add(new CATEl((char)(i + MinChar), false, bytes.ToList(), i));
                 }
-                result += "};\n\n";
-
-                result += $"FONT_INFO font_{name}(void)\n";
-                result += "{\n";
-                result += "    FONT_INFO header;\n";
-                result += $"    header.data = (uint16_t)font_{name}_data;\n";
-				result += $"    header.maxXSize = {bmps[0].Width};\n";
-				result += $"    header.maxYSize = {bmps[0].Height};\n";
-				result += $"    header.startChar = {MaxChar};\n";
-				result += $"    header.endChar = {MinChar};\n";
-                result += "    header.bytesPerSymbol = (uint16_t)ceil(header.maxXSize * header.maxYSize / 8.0);\n";
-                result += "    header.color = cl_WHITE;\n";
-				result += "    header.bgColor = cl_BLACK;\n";
-                result += "    return header;\n";
-                result += "}\n\n";
-
-
-                result += "#endif\n";
-                if (SaveTotalImage)
-					SaveTotal();
-				File.WriteAllText(string.Format("font_{0}.h", name), result);
             }
+
+            if (Encoding)
+            {
+                Console.Write("4. Compressing...   ");
+                using (var progress = new ProgressBar())
+                {
+                    Data.Encode();
+                    progress.Report(0.5);
+                    Data.CreateHeader();
+                }
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append(Writer.WriteHeader(name));
+            sb.Append(Writer.WriteDataHeader((byte)maxXSize, (byte)maxYSize, (byte)MinChar, (byte)MaxChar, Encoding, Data.AverageCompressionRatio, bmps.Length, Data));
+            if (Encoding) sb.Append(Writer.WriteCAT(Data, Format_MaxBytes));
+            foreach (var a in Data.Elems)
+                sb.Append(Writer.WriteSymbolData(a, Format_MaxBytes));
+            sb.Append(Writer.WriteFooter(name, bmps[0].Width, bmps[0].Height, (byte)MinChar, (byte)MaxChar, Encoding));
+
+            if (SaveTotalImage)
+				SaveTotal();
+			File.WriteAllText(string.Format("font_{0}.h", name), sb.ToString());
         }
 
         public static void Rasterize()
@@ -308,8 +268,16 @@ namespace FontRasterer
 
 	class Program
     {
+        public static IEnumerable<T> CreateSequence<T>(Func<int, T> elementCreator, int count)
+        {
+            if (elementCreator == null)
+                throw new ArgumentNullException("elementCreator");
 
-		public static string Found(string name, object defValue)
+            for (int i = 0; i < count; ++i)
+                yield return (elementCreator(i));
+        }
+
+        public static string Found(string name, object defValue)
 		{
 			if(arguments.ContainsKey(name.ToLower()))
 				return arguments[name.ToLower()].ToString();
@@ -338,11 +306,13 @@ namespace FontRasterer
 			Rasterizer.EmptyCharIndex = int.Parse(Found("EmptyCharIndex", 63));
 			Rasterizer.Font = Found("Font", "Courier");
 			Rasterizer.SaveImages = bool.Parse(Found("SaveImages", true));
-			Rasterizer.OutputImagesFormat = Found("OutputImagesFormat", "rbmp{0}.png");
+			Rasterizer.OutputImagesFormat = Found("OutputImagesFormat", "img/rbmp{0}.png");
 			Rasterizer.SaveTotalImage = bool.Parse(Found("SaveTotalImage", true));
 			Rasterizer.TotalImageBorders = bool.Parse(Found("TotalImageBorders", true));
 			Rasterizer.OutputTotalImageFormat = Found("OutputTotalImageFormat", "img/_img_.png");
 			Rasterizer.TotalImagePerRow = int.Parse(Found("TotalImagePerRow", 20));
+            Rasterizer.Encoding = bool.Parse(Found("Encoding", true));
+            
 
 			int mode = int.Parse(Found("mode", 0));
 
