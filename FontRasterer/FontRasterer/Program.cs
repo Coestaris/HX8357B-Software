@@ -30,7 +30,7 @@ namespace FontRasterer
         public static bool TotalImageBorders { get; set; } = true;
         public static string OutputTotalImageFormat { get; set; } = "img/_img_.png";
         public static int TotalImagePerRow { get; set; } = 20;
-        
+
 		private static Bitmap[] bmps;
 		private static int maxXSize;
 		private static int maxYSize;
@@ -112,6 +112,15 @@ namespace FontRasterer
 			Load();
             Console.Write("3. Preparing...   ");
             FontData Data = new FontData();
+
+			if (EmptyCharIndex - MinChar < 0 ||
+			   EmptyCharIndex - MinChar >= bmps.Length) 
+			{
+				Console.WriteLine("Wrong EmptyCharIndex value.\"{0}\"\nPress any key to continue. . .", EmptyCharIndex - MinChar);
+				Console.ReadKey();
+				Environment.Exit(1);
+			}
+
             using (var progress = new ProgressBar())
             {
                 {
@@ -145,6 +154,7 @@ namespace FontRasterer
                     Data.Elems.Add(new CATEl((char)(i + MinChar), false, bytes.ToList(), i));
                 }
             }
+			Console.WriteLine();
 
             if (Encoding)
             {
@@ -311,8 +321,8 @@ namespace FontRasterer
 			Rasterizer.TotalImageBorders = bool.Parse(Found("TotalImageBorders", true));
 			Rasterizer.OutputTotalImageFormat = Found("OutputTotalImageFormat", "img/_img_.png");
 			Rasterizer.TotalImagePerRow = int.Parse(Found("TotalImagePerRow", 20));
-            Rasterizer.Encoding = bool.Parse(Found("Encoding", true));
-            
+      Rasterizer.Encoding = bool.Parse(Found("Encoding", true));
+
 
 			int mode = int.Parse(Found("mode", 0));
 

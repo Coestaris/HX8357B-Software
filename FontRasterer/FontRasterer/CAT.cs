@@ -28,15 +28,19 @@ namespace FontRasterer
         public void Encode()
         {
             int before = Bytes.Count;
-            Bytes = Encoder.Encode(Bytes, 0, Bytes.Count);
-            EncodingCompressionRatio = 1 - Bytes.Count / (float)before;
+            var newBytes = Encoder.Encode(Bytes, 0, Bytes.Count);
+			EncodingCompressionRatio = 1 - newBytes.Count / (float)before;
+
+            if(EncodingCompressionRatio > 0)
+              Bytes = newBytes;
+            else EncodingCompressionRatio = float.NegativeInfinity;
         }
 
         public override string ToString()
         {
             if (IsUnrec)
-                return $"    //Symbol for unrecognised chars.{(!float.IsInfinity(EncodingCompressionRatio) ? ". CR: " + EncodingCompressionRatio.ToString("0.00") : "")}";
-            else return $"    //Symbol: {(int)Char} {(!char.IsControl(Char) ? $" or '{Char}'" : "")}. Symbol Index: {Index}{(!float.IsInfinity(EncodingCompressionRatio) ? ". CR: " + EncodingCompressionRatio.ToString("0.00") : "")}";
+				return $"    //Symbol for unrecognised chars.{(!float.IsInfinity(EncodingCompressionRatio) ? " CR: " + (EncodingCompressionRatio * 100).ToString("0.00") + '%': ". Skipping compression")}";
+			else return $"    //Symbol: {(int)Char} {(!char.IsControl(Char) ? $" or '{Char}'" : "")}. Symbol Index: {Index}{(!float.IsInfinity(EncodingCompressionRatio) ? ". CR: " + (EncodingCompressionRatio * 100).ToString("0.00") + '%' : ". Skipping compression")}";
         }
     }
 
@@ -44,9 +48,11 @@ namespace FontRasterer
     {
         public UInt16 Offset;
         public UInt16 Length;
+        public bool EncodeSymbol;
 
-        public CATHeaderEl(ushort offset, ushort length)
+        public CATHeaderEl(ushort offset, ushort length, bool encodeSymbol)
         {
+            EncodeSymbol = encodeSymbol;
             Offset = offset;
             Length = length;
         }
@@ -55,7 +61,13 @@ namespace FontRasterer
         {
             List<byte> result = new List<byte>();
             result.AddRange(BitConverter.GetBytes(Offset));
-            result.AddRange(BitConverter.GetBytes(Length));
+
+            var len = Length;
+            if(EncodeSymbol)
+                BitWise.SetBit(ref len, 15);
+            else BitWise.ClearBit(ref len, 15);
+
+			result.AddRange(BitConverter.GetBytes(len));
             return result;
         }
     }
@@ -76,7 +88,8 @@ namespace FontRasterer
             int offset = Elems.Count * 4 + 4;
             for(int i = 0; i < Elems.Count; i++)
             {
-                HeaderElems.Add(new CATHeaderEl((UInt16)offset, (UInt16)Elems[i].Bytes.Count));
+                HeaderElems.Add(new CATHeaderEl((UInt16)offset, (UInt16)Elems[i].Bytes.Count,
+								!float.IsInfinity(Elems[i].EncodingCompressionRatio)));
                 offset += Elems[i].Bytes.Count;
             }
         }
@@ -85,7 +98,7 @@ namespace FontRasterer
         {
             for(int i = 0; i < Elems.Count; i++)
                 Elems[i].Encode();
-            AverageCompressionRatio = Program.CreateSequence(p => Elems[p].EncodingCompressionRatio,
+			AverageCompressionRatio = Program.CreateSequence(p => (float.IsInfinity(Elems[p].EncodingCompressionRatio) ? 0 : Elems[p].EncodingCompressionRatio),
                 Elems.Count).Average();
         }
 

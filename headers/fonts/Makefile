@@ -1,38 +1,38 @@
 ﻿#Result font name
-NAME = std
+NAME = sevenSegmentDigits
 
 #Max width of symbol
-WIDTH = 10
+WIDTH = 100
 
 #Max height of symbol
-HEIGHT = 10
+HEIGHT = 100
 
 #Font size
 FSIZE = 16
 
-#Use RLE compression 
+#Use RLE compression
 ENCODING = true
 
 #How many bytes will be in row
 MAX_BYTES_IN_ROW = 10
 
 #Start char of new font
-MINCHAR = 33
+MINCHAR = 32
 
 #End char of new font
-MAXCHAR = 161
+MAXCHAR = 127
 
 #Default char for unrecognised chars. Usually 63 ('?')
 EMPTY_CHAR_INDEX = 63
 
 #Base font name
-FONT = Courier
+FONT = Monospace_Regular
 
 #Output results while rendering
 SAVE_IMAGES = true
 
 #Output rendering result name format
-SAVE_IMAGES_NAMEFORMAT = rbmp{0}.png
+SAVE_IMAGES_NAMEFORMAT = img/{0}.png
 
 #Save general image of rendering result
 SAVE_TOTAL_IMAGE = true
@@ -41,7 +41,7 @@ SAVE_TOTAL_IMAGE = true
 SAVE_TOTAL_IMAGE_BORDERS = true
 
 #General rendering result image name format
-SAVE_TOTAL_IMAGE_NAMEFORMAT = img/_img_.png
+SAVE_TOTAL_IMAGE_NAMEFORMAT = img/_img_.bmp
 
 #Images per row in general image
 SAVE_TOTAL_IMAGE_IMGPEROW = 20
@@ -65,10 +65,27 @@ FLAGS += -Encoding:$(ENCODING)
 
 PROGRAM = ./FontRasterer.exe
 
-full: rast save
+IMAGE_DIRECTORY = img
+
+BACKUPNAME = backup.tar.save
+
+backup:
+	$(shell tar -czf $(BACKUPNAME) $(IMAGE_DIRECTORY)/)
+
+restore:
+	$(shell tar -xzvf $(BACKUPNAME))
 
 save:
 	$(PROGRAM) -mode:0 $(FLAGS)
 
 rast:
 	$(PROGRAM) -mode:1 $(FLAGS)
+
+full:
+	$(PROGRAM) -mode:2 $(FLAGS)
+
+clean:
+	$(shell rm -f $(IMAGE_DIRECTORY)/*)
+
+savetotal:
+	$(PROGRAM) -mode:3 $(FLAGS)

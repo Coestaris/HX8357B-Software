@@ -22,7 +22,7 @@ namespace FontRasterer
             {
                 if (i++ % maxInRow == 0)
                     result += "\n    ";
-                result += Normalize("0x" + item.ToString("x").ToUpper(), 3) + ", ";
+				result += Normalize("0x" + item.ToString("x").ToUpper() + ", ", 5);
             }
             result += "\n\n";
             return result;
@@ -43,8 +43,8 @@ namespace FontRasterer
         {
             string result = "";
             result += $"    //Font Info. Symbol X size: {maxXSize}, Symbol Y size: {maxYSize}";
-            result += $"\n    //Stars from: {minChar} {(!char.IsControl((char)minChar) ? "or '" + (char)minChar + "' " : "")},";
-            result += $" Ends with: {maxChar} {(!char.IsControl((char)maxChar) ? "or '" + (char)maxChar + "' " : "")}\n";
+            result += $"\n    //Stars from: {minChar} {(!char.IsControl((char)minChar) ? "or '" + (char)minChar + "'" : "")},";
+            result += $" ends with: {maxChar} {(!char.IsControl((char)maxChar) ? "or '" + (char)maxChar + "' " : "")}\n";
 
             var totalSize = 0;
 
@@ -56,9 +56,15 @@ namespace FontRasterer
 
             result += $"    //Total size: {totalSize} bytes";
             if(useEncoding)
+			{ 
+				result += $"\n    //Uncopressed total size: {(int)Math.Ceiling(maxXSize * maxYSize / 8.0) * len + 4} bytes";
+				int _len = data.HeaderElems.FindAll(p => p.EncodeSymbol).Count();
                 result += $"\n    //Using RLE compression:" +
-                    $"\n    //    Data Compression Ratio:  {AverageCompressionRatio}" +
-                    $"\n    //    Total Compression Ratio: {1 - totalSize / ((float)Math.Ceiling(maxXSize * maxYSize / 8.0) * len + 4)}";
+					$"\n    //    Data Compression Ratio:  {(AverageCompressionRatio * 100).ToString("0.00") + '%'}" +
+					$"\n    //    Total Compression Ratio: { ((1 - totalSize / ((float)Math.Ceiling(maxXSize * maxYSize / 8.0) * len + 4)) * 100).ToString("0.00") + '%' }" +
+					$"\n    //    Compressed chars:  {_len}" +
+					$"\n    //    Uncompressed chars:  {data.HeaderElems.Count - _len}";
+			}
             result += $"    ";
             result += WriteBytes(new List<byte> { maxXSize, maxYSize, minChar, maxChar }, 10);
             return result;
