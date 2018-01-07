@@ -13,6 +13,9 @@ FSIZE = 16
 #Use RLE compression 
 ENCODING = true
 
+#Save font as .h C header.
+HFile = true
+
 #How many bytes will be in row
 MAX_BYTES_IN_ROW = 10
 

@@ -30,8 +30,9 @@ namespace FontRasterer
         public static bool TotalImageBorders { get; set; } = true;
         public static string OutputTotalImageFormat { get; set; } = "img/_img_.png";
         public static int TotalImagePerRow { get; set; } = 20;
+        public static bool HFile { get; set; }
 
-		private static Bitmap[] bmps;
+        private static Bitmap[] bmps;
 		private static int maxXSize;
 		private static int maxYSize;
 
@@ -167,17 +168,38 @@ namespace FontRasterer
                 }
             }
 
-            StringBuilder sb = new StringBuilder();
-            sb.Append(Writer.WriteHeader(name));
-            sb.Append(Writer.WriteDataHeader((byte)maxXSize, (byte)maxYSize, (byte)MinChar, (byte)MaxChar, Encoding, Data.AverageCompressionRatio, bmps.Length, Data));
-            if (Encoding) sb.Append(Writer.WriteCAT(Data, Format_MaxBytes));
-            foreach (var a in Data.Elems)
-                sb.Append(Writer.WriteSymbolData(a, Format_MaxBytes));
-            sb.Append(Writer.WriteFooter(name, bmps[0].Width, bmps[0].Height, (byte)MinChar, (byte)MaxChar, Encoding));
-
             if (SaveTotalImage)
-				SaveTotal();
-			File.WriteAllText(string.Format("font_{0}.h", name), sb.ToString());
+                SaveTotal();
+
+            if (HFile)
+            {
+
+                StringBuilder sb = new StringBuilder();
+                sb.Append(Writer.WriteHeader(name));
+                sb.Append(Writer.WriteDataHeader((byte)maxXSize, (byte)maxYSize, (byte)MinChar, (byte)MaxChar, Encoding, Data.AverageCompressionRatio, bmps.Length, Data));
+                if (Encoding) sb.Append(Writer.WriteCAT(Data, Format_MaxBytes));
+                foreach (var a in Data.Elems)
+                    sb.Append(Writer.WriteSymbolData(a, Format_MaxBytes));
+                sb.Append(Writer.WriteFooter(name, bmps[0].Width, bmps[0].Height, (byte)MinChar, (byte)MaxChar, Encoding));
+
+                File.WriteAllText(string.Format("font_{0}.h", name), sb.ToString());
+            } else
+            {
+                var result = new List<byte>
+                {
+                    (byte)W,
+                    (byte)H,
+                    (byte)MinChar,
+                    (byte)MaxChar,
+                    (byte)(Encoding ? 1 : 0)
+                };
+                if (Encoding)
+                    result.AddRange(Data.HeaderToBytes());
+                foreach (var a in Data.Elems)
+                    result.AddRange(a.Bytes);
+
+                File.WriteAllBytes(string.Format("font_{0}.raw", name), result.ToArray());
+            }
         }
 
         public static void Rasterize()
@@ -322,9 +344,9 @@ namespace FontRasterer
 			Rasterizer.OutputTotalImageFormat = Find("OutputTotalImageFormat", "img/_img_.png");
 			Rasterizer.TotalImagePerRow = int.Parse(Find("TotalImagePerRow", 20));
             Rasterizer.Encoding = bool.Parse(Find("Encoding", true));
+            Rasterizer.HFile = bool.Parse(Find("HFile", true));
 
-
-			int mode = int.Parse(Find("mode", 0));
+            int mode = int.Parse(Find("mode", 0));
 
 			switch(mode)
 			{

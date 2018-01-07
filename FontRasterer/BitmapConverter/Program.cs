@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -22,6 +23,7 @@ namespace BitmapConverter
         public static ColorMode ColorMode { get; set; }
         public static int Format_MaxBytes { get; set; }
         public static string BitmapName { get; set; }
+        public static bool HFile { get; set; }
 
         public static void Convert()
         {
@@ -50,6 +52,9 @@ namespace BitmapConverter
                         gr.DrawImageUnscaled(new Bitmap(BitmapName), new Point(0, 0));
                 }
 
+                if (BitmapColor.CreateColor(ColorMode, Color.Empty).ImagePreProcessingRequired)
+                    BitmapColor.CreateColor(ColorMode, Color.Empty).PreProceed(ref bmp);
+
                 for (int x = 0; x < W; x++)
                     for (int y = 0; y < H; y++)
                     {
@@ -69,17 +74,45 @@ namespace BitmapConverter
                 for (int y = 0; y < H; y++)
                     result.AddRange(colors[x, y].ToBytes());
 
-            StringBuilder sb = new StringBuilder();
-            sb.Append(Writer.WriteHeader(Name, ColorMode, W, H));
-            sb.Append(Writer.WriteData(result, Format_MaxBytes));
-            sb.Append(Writer.WriteFooter(Name));
+            //Я бы перегрузил статический метод, если это можно было бы делать.
+            //Ждем, надеемся...
+            if (colors[0, 0].BytesPostProcessingRequired)
+                colors[0, 0].PostProceed(ref result);
 
-            File.WriteAllText(string.Format("bitmap_{0}.h", Name), sb.ToString());
+            if (HFile)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append(Writer.WriteHeader(Name, ColorMode, W, H));
+                sb.Append(Writer.WriteData(result, Format_MaxBytes));
+                sb.Append(Writer.WriteFooter(Name));
+                File.WriteAllText(string.Format("bitmap_{0}.h", Name), sb.ToString());
+            } else
+            {
+                result.InsertRange(0, BitConverter.GetBytes((short)H));
+                result.InsertRange(0, BitConverter.GetBytes((short)W));
+                result.Insert(0, (byte)ColorMode);
+                File.WriteAllBytes(string.Format("bitmap_{0}.raw", Name), result.ToArray());
+            }
+
+            Bitmap bmp1 = new Bitmap(W, H);
+            for (int x = 0; x < W; x++)
+                for (int y = 0; y < H; y++)
+                    bmp1.SetPixel(x, y, colors[x, y].ToRGB());
+            bmp1.Save("result_in1.png");
         }
     }
 
     class Program
     {
+        public static IEnumerable<T> CreateSequence<T>(Func<int, T> elementCreator, int count)
+        {
+            if (elementCreator == null)
+                throw new ArgumentNullException("elementCreator");
+
+            for (int i = 0; i < count; ++i)
+                yield return (elementCreator(i));
+        }
+
         public static Dictionary<string, object> arguments;
 
         public static string Find(string name, object defValue)
@@ -97,13 +130,63 @@ namespace BitmapConverter
                 arguments.Add(item.Split(':')[0].TrimStart('-').ToLower(), item.Split(':')[1]);
 
             Converter.Name = Find("name", "sheep");
-            Converter.W = int.Parse(Find("W", 32));
-            Converter.H = int.Parse(Find("H", 32));
+            Converter.W = int.Parse(Find("W", 128));
+            Converter.H = int.Parse(Find("H", 128));
+            Converter.HFile = bool.Parse(Find("HFile", false));
             Converter.SizeMode = (SizeMode)Enum.Parse(typeof(SizeMode), Find("SizeMode", "Stretch"));
-            Converter.ColorMode = (ColorMode)Enum.Parse(typeof(ColorMode), Find("ColorMode", "Default"));
+            Converter.ColorMode = (ColorMode)Enum.Parse(typeof(ColorMode), Find("ColorMode", "Color_555"));
             Converter.BitmapName = Find("BitmapName", "image.jpg");
-            Converter.Format_MaxBytes = int.Parse(Find("Format_MaxBytes", 10)); 
+            Converter.Format_MaxBytes = int.Parse(Find("Format_MaxBytes", 10));
+
             Converter.Convert();
+
+            ToBitmap(File.ReadAllBytes("bitmap_sheep.raw").ToList());
+        }
+
+        static public void ToBitmap(List<byte> bytes)
+        {
+            ColorMode colorMode = (ColorMode)bytes[0];
+            ushort W = BitConverter.ToUInt16(bytes.ToArray(), 1);
+            ushort H = BitConverter.ToUInt16(bytes.ToArray(), 3);
+            BitmapColor[,] colors = new BitmapColor[W, H];
+            BitmapColor baseColor = BitmapColor.CreateColor(colorMode, Color.Empty);
+
+            int counter = 0;
+
+            List<bool> bits = new List<bool>();
+
+            if (colorMode == ColorMode.Binary_encoded ||
+                colorMode == ColorMode.GrayScale_encoded)
+            {
+                Encoder.Decode(bytes, 5, bytes.Count - 5, p => bits.Add(p));
+                var decodeResult = CreateSequence(p =>
+                {
+                    byte b = 0;
+                    for (int i = 0; i < 8; i++)
+                        if (p * 8 + i < bits.Count)
+                            BitWise.SSetBit(ref b, i, bits[p * 8 + i] ? 1 : 0);
+                    return b;
+                }, (int)Math.Ceiling(bits.Count / 8f)).ToList();
+
+                bytes = new List<byte>();
+                bytes.AddRange(new byte[5] { 0, 0, 0, 0, 0 });
+                bytes.AddRange(decodeResult);
+            }
+
+            for (int x = 0; x < W; x++)
+                for (int y = 0; y < H; y++)
+                {
+                    colors[x, y] = BitmapColor.CreateColor(colorMode, Color.Empty);
+                    colors[x, y].FromBytes(bytes.Skip(baseColor.BytesPerColor * counter + 5).Take(baseColor.BytesPerColor).ToArray());
+                    counter++;
+                }
+
+            Bitmap bmp = new Bitmap(W, H);
+            for (int x = 0; x < W; x++)
+                for (int y = 0; y < H; y++)
+                    bmp.SetPixel(x, y, colors[x, y].ToRGB());
+
+            bmp.Save("result_out1.png");
         }
     }
 }
