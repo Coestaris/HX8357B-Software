@@ -49,10 +49,6 @@ void gr_scroll(uint16_t start, uint16_t tfa, uint16_t vsa, uint16_t bfa)
   gr_h_WR_STB;
 
   gr_h_RS_L;
-
-  //gr_writecommand(gr_c_setScrollStart);
-  //gr_writedata(start >> 8);
-  //gr_writedata(start >> 8);
 }
 
 void gr_setBrightness(uint8_t value)
@@ -148,25 +144,112 @@ void gr_text_printChar(FONT_INFO info, uint8_t symbol)
   else gr_text_print(info, symbol - info.startChar + 1);
 }
 
+#include "headers/uart.h"
+
 void gr_text_print(FONT_INFO info, uint8_t index)
 {
-  uint16_t bits = info.maxXSize * info.maxYSize;
-  uint32_t globalBit = 0;
-  uint16_t memShift = info.data + (uint16_t)4 + (uint16_t)index * info.bytesPerSymbol;
-
   gr_setAddrWindow(yoffset, offset, yoffset + info.maxYSize - 1, offset + info.maxXSize - 1);
-  for (uint16_t i = 0; i < info.bytesPerSymbol; i++)
+  uint32_t globalBit = 0;
+  uint16_t bits = info.maxXSize * info.maxYSize;
+
+  if(info.encoded)
   {
-    uint8_t byte = pgm_read_byte_near(memShift + i);
-    for (uint8_t currentBit = 0; currentBit < 8; currentBit++)
+    CAT_ITEM data = CAT_GET(info.data, index);
+    uint16_t memShift = info.data + data.offset;
+
+    //Some symbols marked for skipping encoding
+    if(CAT_ITEM_ISENCODED(data))
     {
-      if(globalBit++ > bits)
-        goto spacing;
-      if(bitw_bit(byte, currentBit))
-        {PushColor(info.color);}
-      else PushColor(info.bgColor);
+      bitw_clear(data.length, 15);
+      for (uint16_t i = 0; i < data.length;)
+      {
+        //DECODING
+        uint8_t leadB = pgm_read_byte_near(memShift + i);
+        if (bitw_bit(leadB, 7) == 1)
+        {
+          //Byte not encoded
+          for (uint8_t b = 0; b < 7; b++)
+          {
+            if(globalBit++ > bits)
+              goto spacing;
+            if(bitw_bit(leadB, b))
+              {PushColor(info.color);}
+            else PushColor(info.bgColor);
+          }
+          i++;
+        }
+        else
+        {
+          uint8_t indexLB = pgm_read_byte_near(memShift + i + 1);
+          if (bitw_bit(indexLB, 7) == 0)
+          {
+            //8-bit length
+            for (uint8_t cnt = 0; cnt < indexLB; cnt++)
+              for (uint8_t b = 0; b < 7; b++)
+              {
+                if(globalBit++ > bits)
+                  goto spacing;
+                if(bitw_bit(leadB, b))
+                  {PushColor(info.color);}
+                else PushColor(info.bgColor);
+              }
+            i += 2;
+          }
+          else
+          {
+            //16-bit length
+            uint8_t indexHB = pgm_read_byte_near(memShift + i + 2);
+            bitw_clear(indexLB, 7);
+            uint16_t len = bitw_toInt16(indexLB, indexHB);
+            for (uint16_t cnt = 0; cnt < len; cnt++)
+                for (uint8_t b = 0; b < 7; b++)
+                {
+                  if(globalBit++ > bits)
+                    goto spacing;
+                  if(bitw_bit(leadB, b))
+                    {PushColor(info.color);}
+                  else PushColor(info.bgColor);
+                }
+            i += 3;
+          }
+        }
+        //END
+      }
+    } else
+    {
+      for (uint16_t i = 0; i < data.length; i++)
+      {
+        uint8_t byte = pgm_read_byte_near(memShift + i);
+        for (uint8_t b = 0; b < 8; b++)
+        {
+          if(globalBit++ > bits)
+            goto spacing;
+          if(bitw_bit(byte, b))
+            {PushColor(info.color);}
+          else PushColor(info.bgColor);
+        }
+      }
     }
   }
+  else
+  {
+    //Default not encoded font
+    uint16_t memShift = info.data + (uint16_t)4 + (uint16_t)index * info.bytesPerSymbol;
+
+    for (uint16_t i = 0; i < info.bytesPerSymbol; i++)
+    {
+      uint8_t byte = pgm_read_byte_near(memShift + i);
+      for (uint8_t currentBit = 0; currentBit < 8; currentBit++)
+      {
+        if(globalBit++ > bits)
+          goto spacing;
+        if(bitw_bit(byte, currentBit))
+          {PushColor(info.color);}
+        else PushColor(info.bgColor);
+      }
+    }
+  }
+
   spacing:
   if(offset + info.maxXSize + betweenSymbolSpaceX >= gr_getWidth())
     {

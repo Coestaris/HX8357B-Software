@@ -3,6 +3,7 @@
 
 #include <avr/pgmspace.h>
 
+#include "bitwise.h"
 #include "colors.h"
 
 #define ASCII_toUpper(x) ((x>96)&&(x<123))?x-32:x
@@ -10,8 +11,16 @@
 
 typedef struct
 {
-  uint8_t encoded;
+  uint16_t offset;
+  uint16_t length;
+} CAT_ITEM;
 
+uint8_t CAT_ITEM_ISENCODED(CAT_ITEM a);
+CAT_ITEM CAT_GET(uint16_t data, uint16_t index);
+
+typedef struct
+{
+  uint8_t encoded;
   uint8_t maxXSize;
   uint8_t maxYSize;
   uint8_t startChar;
