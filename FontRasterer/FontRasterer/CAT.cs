@@ -29,7 +29,7 @@ namespace FontRasterer
         {
             int before = Bytes.Count;
             var newBytes = Encoder.Encode(Bytes, 0, Bytes.Count);
-			EncodingCompressionRatio = 1 - newBytes.Count / (float)before;
+			      EncodingCompressionRatio = 1 - newBytes.Count / (float)before;
 
             if(EncodingCompressionRatio > 0)
               Bytes = newBytes;

@@ -81,8 +81,8 @@ namespace FontRasterer
             result += $"    header.encoded = {(useEncoding? '1' : '0')};\n";
             result += $"    header.maxXSize = {Width};\n";
             result += $"    header.maxYSize = {Height};\n";
-            result += $"    header.startChar = {maxChar};\n";
-            result += $"    header.endChar = {minChar};\n";
+            result += $"    header.startChar = {minChar};\n";
+			result += $"    header.endChar = {maxChar};\n";
             result += "    header.bytesPerSymbol = (uint16_t)ceil(header.maxXSize * header.maxYSize / 8.0);\n";
             result += "    header.color = cl_WHITE;\n";
             result += "    header.bgColor = cl_BLACK;\n";

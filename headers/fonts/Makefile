@@ -17,13 +17,13 @@ ENCODING = true
 MAX_BYTES_IN_ROW = 10
 
 #Start char of new font
-MINCHAR = 32
+MINCHAR = 48
 
 #End char of new font
-MAXCHAR = 127
+MAXCHAR = 57
 
 #Default char for unrecognised chars. Usually 63 ('?')
-EMPTY_CHAR_INDEX = 63
+EMPTY_CHAR_INDEX = 48
 
 #Base font name
 FONT = Monospace_Regular

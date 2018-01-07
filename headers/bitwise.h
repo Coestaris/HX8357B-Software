@@ -13,9 +13,11 @@
 #define bitw_inverse(n,x) n ^= logicalOne << x
 
 //Gets xth bit in n
-#define bitw_bit(n,x) (n >> x) & logicalOne
+#define bitw_bit(n,x) ((n >> x) & logicalOne)
 
 //Sets xth bit in n to b
 #define bitw_sset(n,x,b) n ^= (- b ^ n) & (logicalOne << x)
+
+#define bitw_toInt16(l,h) (uint16_t)(l << 8 | h)
 
 #endif

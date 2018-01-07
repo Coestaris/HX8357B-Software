@@ -38,7 +38,7 @@ OBJDIR = _other/.obj
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c graphics.c uart.c
+SRC = $(TARGET).c graphics.c uart.c fontinfo.c
 
 
 # List C++ source files here. (C dependencies are automatically generated.)
@@ -237,7 +237,7 @@ LDFLAGS += -Wl,--gc-sections -Wl,--relax
 AVRDUDE_PROGRAMMER = wiring
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
-AVRDUDE_PORT = /dev/ttyUSB0
+AVRDUDE_PORT = /dev/ttyUSB1
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(OBJDIR)/$(TARGET).hex
 

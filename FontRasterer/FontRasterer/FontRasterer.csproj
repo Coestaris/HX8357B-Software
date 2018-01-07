@@ -35,7 +35,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Commandlineparameters>-mode:0 -name:terminal -w:200 -h:200 -fsize:32 -Format_MaxBytes:10 -minchar:47 -maxchar:57 -EmptyCharIndex:47 -font:Monospace_Regular -saveimages:true -OutputImagesFormat:img/{0}.png -SaveTotalImage:true -TotalImageBorders:true -OutputTotalImageFormat:img/_img_.png -TotalImagePerRow:20
+    <Commandlineparameters>-mode:0 -name:sevenSegmentDigits -w:10 -h:10 -fsize:16 -Format_MaxBytes:10 -minchar:48 -maxchar:57 -EmptyCharIndex:48 -font:Courier -saveimages:true -OutputImagesFormat:img/{0}.png -SaveTotalImage:true -TotalImageBorders:true -OutputTotalImageFormat:img/_img_.bmp -TotalImagePerRow:20 -Encoding:true
 </Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
