@@ -287,7 +287,7 @@ namespace FontRasterer
                 yield return (elementCreator(i));
         }
 
-        public static string Found(string name, object defValue)
+        public static string Find(string name, object defValue)
 		{
 			if(arguments.ContainsKey(name.ToLower()))
 				return arguments[name.ToLower()].ToString();
@@ -306,25 +306,25 @@ namespace FontRasterer
 			//foreach (var item in arguments)
 				//Console.WriteLine(item.ToString());
 
-			Rasterizer.name = Found("name", "std");
-			Rasterizer.W = int.Parse(Found("W", 100));
-			Rasterizer.H = int.Parse(Found("H", 100));
-			Rasterizer.FSize = float.Parse(Found("FSize", 16));
-			Rasterizer.Format_MaxBytes = int.Parse(Found("Format_MaxBytes", 10));
-			Rasterizer.MinChar = int.Parse(Found("MinChar", 33));
-			Rasterizer.MaxChar = int.Parse(Found("MaxChar", 161));
-			Rasterizer.EmptyCharIndex = int.Parse(Found("EmptyCharIndex", 63));
-			Rasterizer.Font = Found("Font", "Courier");
-			Rasterizer.SaveImages = bool.Parse(Found("SaveImages", true));
-			Rasterizer.OutputImagesFormat = Found("OutputImagesFormat", "img/rbmp{0}.png");
-			Rasterizer.SaveTotalImage = bool.Parse(Found("SaveTotalImage", true));
-			Rasterizer.TotalImageBorders = bool.Parse(Found("TotalImageBorders", true));
-			Rasterizer.OutputTotalImageFormat = Found("OutputTotalImageFormat", "img/_img_.png");
-			Rasterizer.TotalImagePerRow = int.Parse(Found("TotalImagePerRow", 20));
-      Rasterizer.Encoding = bool.Parse(Found("Encoding", true));
+			Rasterizer.name = Find("name", "std");
+			Rasterizer.W = int.Parse(Find("W", 100));
+			Rasterizer.H = int.Parse(Find("H", 100));
+			Rasterizer.FSize = float.Parse(Find("FSize", 16));
+			Rasterizer.Format_MaxBytes = int.Parse(Find("Format_MaxBytes", 10));
+			Rasterizer.MinChar = int.Parse(Find("MinChar", 33));
+			Rasterizer.MaxChar = int.Parse(Find("MaxChar", 161));
+			Rasterizer.EmptyCharIndex = int.Parse(Find("EmptyCharIndex", 63));
+			Rasterizer.Font = Find("Font", "Courier");
+			Rasterizer.SaveImages = bool.Parse(Find("SaveImages", true));
+			Rasterizer.OutputImagesFormat = Find("OutputImagesFormat", "img/rbmp{0}.png");
+			Rasterizer.SaveTotalImage = bool.Parse(Find("SaveTotalImage", true));
+			Rasterizer.TotalImageBorders = bool.Parse(Find("TotalImageBorders", true));
+			Rasterizer.OutputTotalImageFormat = Find("OutputTotalImageFormat", "img/_img_.png");
+			Rasterizer.TotalImagePerRow = int.Parse(Find("TotalImagePerRow", 20));
+            Rasterizer.Encoding = bool.Parse(Find("Encoding", true));
 
 
-			int mode = int.Parse(Found("mode", 0));
+			int mode = int.Parse(Find("mode", 0));
 
 			switch(mode)
 			{
