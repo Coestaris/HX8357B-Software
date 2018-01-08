@@ -52,8 +52,10 @@ namespace BitmapConverter
                         gr.DrawImageUnscaled(new Bitmap(BitmapName), new Point(0, 0));
                 }
 
-                if (BitmapColor.CreateColor(ColorMode, Color.Empty).ImagePreProcessingRequired)
-                    BitmapColor.CreateColor(ColorMode, Color.Empty).PreProceed(ref bmp);
+                colors[0, 0] = BitmapColor.CreateColor(ColorMode, Color.Empty);
+
+                if (colors[0, 0].ImagePreProcessingRequired)
+                    colors[0, 0].PreProceed(ref bmp);
 
                 for (int x = 0; x < W; x++)
                     for (int y = 0; y < H; y++)
@@ -98,7 +100,7 @@ namespace BitmapConverter
             for (int x = 0; x < W; x++)
                 for (int y = 0; y < H; y++)
                     bmp1.SetPixel(x, y, colors[x, y].ToRGB());
-            bmp1.Save("result_in1.png");
+            bmp1.Save("result_in3.png");
         }
     }
 
@@ -134,8 +136,8 @@ namespace BitmapConverter
             Converter.H = int.Parse(Find("H", 128));
             Converter.HFile = bool.Parse(Find("HFile", false));
             Converter.SizeMode = (SizeMode)Enum.Parse(typeof(SizeMode), Find("SizeMode", "Stretch"));
-            Converter.ColorMode = (ColorMode)Enum.Parse(typeof(ColorMode), Find("ColorMode", "Color_555"));
-            Converter.BitmapName = Find("BitmapName", "image.jpg");
+            Converter.ColorMode = (ColorMode)Enum.Parse(typeof(ColorMode), Find("ColorMode", "Binary"));
+            Converter.BitmapName = Find("BitmapName", "image.png");
             Converter.Format_MaxBytes = int.Parse(Find("Format_MaxBytes", 10));
 
             Converter.Convert();
@@ -150,14 +152,24 @@ namespace BitmapConverter
             ushort H = BitConverter.ToUInt16(bytes.ToArray(), 3);
             BitmapColor[,] colors = new BitmapColor[W, H];
             BitmapColor baseColor = BitmapColor.CreateColor(colorMode, Color.Empty);
-
             int counter = 0;
 
-            List<bool> bits = new List<bool>();
+            if (colorMode == ColorMode.Binary)
+            {
+                var newBytes = CreateSequence(p =>
+                {
+                    return (byte)(BitWise.Bit(bytes[p / 8 + 5], p % 8));
+                }, W * H).ToList();
+
+                bytes = new List<byte>();
+                bytes.AddRange(new byte[5] { 0, 0, 0, 0, 0 });
+                bytes.AddRange(newBytes);
+            }
 
             if (colorMode == ColorMode.Binary_encoded ||
                 colorMode == ColorMode.GrayScale_encoded)
             {
+                List<bool> bits = new List<bool>();
                 Encoder.Decode(bytes, 5, bytes.Count - 5, p => bits.Add(p));
                 var decodeResult = CreateSequence(p =>
                 {
@@ -186,7 +198,7 @@ namespace BitmapConverter
                 for (int y = 0; y < H; y++)
                     bmp.SetPixel(x, y, colors[x, y].ToRGB());
 
-            bmp.Save("result_out1.png");
+            bmp.Save("result_out3.png");
         }
     }
 }

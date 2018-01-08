@@ -81,7 +81,7 @@ namespace BitmapConverter
                 case ColorMode.GrayScale_encoded:
                     return new ColorGrayscaleEncoded(color);
                 case ColorMode.Binary:
-                    break;
+                    return new ColorBinary(color);
                 case ColorMode.Binary_encoded:
                     break;
                 case ColorMode.Default:
