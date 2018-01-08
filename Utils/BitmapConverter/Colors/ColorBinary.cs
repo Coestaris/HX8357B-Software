@@ -66,7 +66,7 @@ namespace BitmapConverter
             result = Program.CreateSequence(p =>
             {
                 byte b = 0;
-                for (int bit = 0; bit < 7; bit++)
+                for (int bit = 0; bit < 8; bit++)
                     if(bitCount < copy.Count)
                         BitWise.SSetBit(ref b, bit, copy[bitCount++]);
                 return b;

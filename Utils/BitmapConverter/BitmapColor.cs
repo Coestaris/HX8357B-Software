@@ -77,18 +77,17 @@ namespace BitmapConverter
                 case ColorMode.Color_332:
                     return new Color332(color);
                 case ColorMode.GrayScale:
-                    return new ColorGrayscale(color); ;
+                    return new ColorGrayscale(color);
                 case ColorMode.GrayScale_encoded:
                     return new ColorGrayscaleEncoded(color);
                 case ColorMode.Binary:
                     return new ColorBinary(color);
                 case ColorMode.Binary_encoded:
-                    break;
+                    return new ColorBinaryEncoded(color);
                 case ColorMode.Default:
                 default:
                     return new Color565(color);
             }
-            return null;
         }
 
         public static T Convert<T>(BitmapColor color) where T : BitmapColor, new()

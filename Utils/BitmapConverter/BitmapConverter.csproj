@@ -46,6 +46,7 @@
     <Compile Include="BitmapColor.cs" />
     <Compile Include="Colors\Color332.cs" />
     <Compile Include="Colors\Color555.cs" />
+    <Compile Include="Colors\ColorBinaryEncoded.cs" />
     <Compile Include="Colors\ColorBinary.cs" />
     <Compile Include="Utils\Bitwise.cs" />
     <Compile Include="ColorMode.cs" />

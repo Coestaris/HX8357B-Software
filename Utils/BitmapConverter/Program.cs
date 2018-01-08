@@ -142,7 +142,7 @@ namespace BitmapConverter
 
             Converter.Convert();
 
-            ToBitmap(File.ReadAllBytes("bitmap_sheep.raw").ToList());
+            //ToBitmap(File.ReadAllBytes("bitmap_sheep.raw").ToList());
         }
 
         static public void ToBitmap(List<byte> bytes)
@@ -154,20 +154,8 @@ namespace BitmapConverter
             BitmapColor baseColor = BitmapColor.CreateColor(colorMode, Color.Empty);
             int counter = 0;
 
-            if (colorMode == ColorMode.Binary)
-            {
-                var newBytes = CreateSequence(p =>
-                {
-                    return (byte)(BitWise.Bit(bytes[p / 8 + 5], p % 8));
-                }, W * H).ToList();
 
-                bytes = new List<byte>();
-                bytes.AddRange(new byte[5] { 0, 0, 0, 0, 0 });
-                bytes.AddRange(newBytes);
-            }
-
-            if (colorMode == ColorMode.Binary_encoded ||
-                colorMode == ColorMode.GrayScale_encoded)
+            if (colorMode == ColorMode.GrayScale_encoded)
             {
                 List<bool> bits = new List<bool>();
                 Encoder.Decode(bytes, 5, bytes.Count - 5, p => bits.Add(p));
@@ -184,6 +172,26 @@ namespace BitmapConverter
                 bytes.AddRange(new byte[5] { 0, 0, 0, 0, 0 });
                 bytes.AddRange(decodeResult);
             }
+            else if(colorMode == ColorMode.Binary_encoded)
+            {
+                List<bool> controlBits = new List<bool>();
+                Encoder.Decode(bytes, 5, bytes.Count - 5, p => controlBits.Add(p));
+                bytes = new List<byte>();
+                bytes.AddRange(new byte[5] { 0, 0, 0, 0, 0 });
+                bytes.AddRange(controlBits.Select(p => (byte)(p ? 1 : 0)));
+            }
+            else if (colorMode == ColorMode.Binary)
+            {
+                List<bool> controlBits = new List<bool>();
+
+                for (int i = 5; i < bytes.Count; i++)
+                    for (int b = 0; b < 8; b++)
+                        controlBits.Add(BitWise.Bit(bytes[i], b) == 1);
+
+                bytes = new List<byte>();
+                bytes.AddRange(new byte[5] { 0, 0, 0, 0, 0 });
+                bytes.AddRange(controlBits.Select(p => (byte)(p ? 1 : 0)));
+            }
 
             for (int x = 0; x < W; x++)
                 for (int y = 0; y < H; y++)
@@ -194,8 +202,8 @@ namespace BitmapConverter
                 }
 
             Bitmap bmp = new Bitmap(W, H);
-            for (int x = 0; x < W; x++)
-                for (int y = 0; y < H; y++)
+                for (int x = 0; x < W; x++)
+                   for (int y = 0; y < H; y++)
                     bmp.SetPixel(x, y, colors[x, y].ToRGB());
 
             bmp.Save("result_out3.png");
