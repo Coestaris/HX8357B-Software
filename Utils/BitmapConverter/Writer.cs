@@ -30,12 +30,17 @@ namespace BitmapConverter
             return result;
         }
 
-        public static string WriteFooter(string name)
+		public static string WriteFooter(string name, int W, int H, ColorMode mode)
         {
             string result = "";
             result += "};\n\n";
-            result += $"BITMAP_IFNO bitmap_{name}(void)\n";
+            result += $"BMP_IFNO bitmap_{name}(void)\n";
             result += "{\n";
+			result += "     BMP_IFNO bmp;";
+			result += $"    width = {W};";
+			result += $"    height = {H};";
+			result += $"    colorMode = {mode.ToString()};";
+			result += "     return bmp;";
             result += "}\n\n";
             result += "#endif\n";
             return result;

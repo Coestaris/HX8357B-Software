@@ -14,9 +14,9 @@ namespace BitmapConverter
         public override void FromBytes(byte[] bytes)
         {
             byte color = bytes[0];
-            R = (byte)((color & 0b11100000) >> 5);
-            G = (byte)((color & 0b00011100) >> 2);
-            B = (byte)(color &  0b00000011);
+			R = (byte)((color & 0xE0) >> 5);
+			G = (byte)((color & 0x1C) >> 2);
+            B = (byte)(color &  0x3);
         }
 
         public override void FromRGB(byte r, byte g, byte b)

@@ -7,6 +7,7 @@ _other/
 *.user
 *.mdb
 *.pdb
+*.exe*
 *.userprefs
 debug/
 bin/

@@ -86,7 +86,7 @@ namespace BitmapConverter
                 StringBuilder sb = new StringBuilder();
                 sb.Append(Writer.WriteHeader(Name, ColorMode, W, H));
                 sb.Append(Writer.WriteData(result, Format_MaxBytes));
-                sb.Append(Writer.WriteFooter(Name));
+				sb.Append(Writer.WriteFooter(Name, W, H, ColorMode));
                 File.WriteAllText(string.Format("bitmap_{0}.h", Name), sb.ToString());
             } else
             {

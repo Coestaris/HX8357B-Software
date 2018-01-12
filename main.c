@@ -6,6 +6,8 @@
 
 #include "headers/fonts/font_std.h"
 
+#include "headers/bmpinfo.h"
+
 int main(void)
 {
   gr_init();

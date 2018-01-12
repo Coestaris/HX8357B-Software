@@ -40,9 +40,9 @@ namespace BitmapConverter
         public override void FromBytes(byte[] bytes)
         {
             UInt16 color = BitConverter.ToUInt16(bytes, 0);
-            R = (byte)((color & 0b1111100000000000) >> 11);
-            G = (byte)((color & 0b0000011111000000) >> 6);
-            B = (byte)((color & 0b0000000000111110) >> 1);
+			R = (byte)((color & 0xF800) >> 11);
+			G = (byte)((color & 0x7C0) >> 6);
+			B = (byte)((color & 0x3E) >> 1);
         }
     }
 }
