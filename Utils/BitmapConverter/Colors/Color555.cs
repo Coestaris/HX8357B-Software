@@ -5,7 +5,7 @@ namespace BitmapConverter
 {
     public class Color555 : BitmapColor
     {
-        public override ColorMode Mode => ColorMode.Color_565;
+        public override ColorMode Mode => ColorMode.Color_555;
         public override int BytesPerColor => 2;
 
         public Color555(Color color) : base(color) { }
