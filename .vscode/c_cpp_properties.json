@@ -1,0 +1,62 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
+        },
+        {
+            "name": "AVR (ATmega2560)",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**",
+                    "/usr/lib/avr/include/"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "${workspaceFolder}",
+                "/usr/lib/avr/include/"
+            ],
+            "defines": [
+                "__AVR_ATmega2560__",
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "msvc-x64"
+        },
+        {
+            "name": "AVR (ATmega328)",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**",
+                    "/usr/lib/avr/include/"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "${workspaceFolder}",
+                "/usr/lib/avr/include/"
+            ],
+            "defines": [
+                "__AVR_ATmega328__",
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "msvc-x64"
+        }
+    ],
+    "version": 4
+}

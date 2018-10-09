@@ -1,11 +1,14 @@
 #ifndef _timing_h_
 #define _timing_h_
 
+#include <string.h>
+#include <stdlib.h>
+
 #include "avr/interrupt.h"
 #include "util/delay.h"
 #include "util/atomic.h"
 
-#define CTC_MATCH_OVERFLOW ((F_CPU / 1000) / 8)
+#define CTC_MATCH_OVERFLOW ((F_CPU / 1000UL) / 8UL)
 
 char chars[10];
 uint32_t m1, m2;
@@ -28,8 +31,8 @@ uint32_t millis(void)
 void initTimer(void)
 {
   TCCR1B |= (1 << WGM12) | (1 << CS11);
-  OCR1AH = (CTC_MATCH_OVERFLOW >> 8);
-  OCR1AL = CTC_MATCH_OVERFLOW;
+  OCR1AH = ((uint8_t)CTC_MATCH_OVERFLOW >> 8);
+  OCR1AL = (uint8_t)CTC_MATCH_OVERFLOW;
   TIMSK1 |= (1 << OCIE1A);
   sei();
 }

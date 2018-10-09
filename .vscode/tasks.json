@@ -1,0 +1,92 @@
+{
+    //AVR VSCode tasks by GIC (Coestaris)
+    "version": "2.0.0",
+    "options": {
+        "env": {
+            "OutputDir" : "out"
+        }
+    },
+    "tasks": [
+        {
+            "presentation": {
+                "echo": true,
+                "focus": false,
+                "panel": "shared",
+                "reveal": "silent"
+            },
+            "label": "CreateFolder",
+            "command" : "mkdir",
+            "type": "shell",
+            "args": [
+                "-p",
+                "${OutputDir}"
+            ]
+        },
+        {
+            "presentation": {
+                "echo": true,
+                "focus": false,
+                "panel": "shared",
+                "reveal": "silent"
+            },
+            "type": "shell",
+            "label": "Program",
+            "command" : "avrdude",
+            "args": [
+                "-P",
+                "/dev/ttyUSB0",
+                "-b",
+                "115200",
+                "-D",
+                "-U",
+                "flash:w:${OutputDir}/main.elf-atmega2560.hex",
+                "-p",
+                "atmega2560",
+                
+                "-c",
+                "wiring",
+            ]
+        },
+        {
+            "label": "RebuildMakeFile",
+            "command" : "cmake",
+            "type": "shell",
+            "args": [
+                "-DCMAKE_TOOLCHAIN_FILE=~/Coding/cmakeAvr/generic-gcc-avr.cmake",
+                "${workspaceFolder}/${OutputDir}"
+            ]
+        },
+        {
+            "label": "Build",
+            "command" : "cd",
+            "group": "build",
+            "type": "shell",
+            "args": [
+                "out",
+                "&&",
+                "make",
+                "&&",
+                "cd",
+                ".."
+            ]
+        },
+        {
+            "label": "ClearOutput",
+            "command": "rm",
+            "args": [
+                "-rf",
+                "${WorkspaceFolder}/${OutputDir}/*.*"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Build & Program",
+            "dependsOn": [
+                "Program",
+                "Program",
+                "Build",
+            ],
+            "problemMatcher": []
+        }
+    ]
+}

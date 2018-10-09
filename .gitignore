@@ -1,6 +1,7 @@
 #Atom files
 _other/
 .git/
+out/
 
 #Some VS files
 *.save

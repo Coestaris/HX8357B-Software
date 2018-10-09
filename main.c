@@ -1,19 +1,18 @@
 #include "avr/io.h"
 
-#include "headers/timing.h"
-#include "headers/uart.h"
-#include "headers/graphics.h"
-
-#include "headers/fonts/font_std.h"
-
-#include "headers/bmpinfo.h"
+#include "src/headers/timing.h"
+#include "src/headers/uart.h"
+#include "src/headers/graphics.h"
+#include "src/headers/fonts/font_std.h"
+#include "src/headers/bmpinfo.h"
 
 int main(void)
 {
-  gr_init();
-  gr_setRotation(1);
-  gr_fill(cl_GREEN);
+    gr_init();
+    gr_setRotation(1);
+    gr_fill(cl_OLIVE
+    );
 
-  while(1);
-  return 0;
+    while(1);
+    return 0;
 }
