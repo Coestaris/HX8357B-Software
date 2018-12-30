@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FontRasterer", "FontRastere
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitmapConverter", "BitmapConverter\BitmapConverter.csproj", "{19405F1A-5C6D-492B-9BB4-083E2387BE39}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "PyFontProcessor", "PyFontProcessor\PyFontProcessor.pyproj", "{01FB8294-6373-41F4-A9E4-D3B22B4460B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,8 @@ Global
 		{19405F1A-5C6D-492B-9BB4-083E2387BE39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19405F1A-5C6D-492B-9BB4-083E2387BE39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19405F1A-5C6D-492B-9BB4-083E2387BE39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01FB8294-6373-41F4-A9E4-D3B22B4460B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01FB8294-6373-41F4-A9E4-D3B22B4460B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

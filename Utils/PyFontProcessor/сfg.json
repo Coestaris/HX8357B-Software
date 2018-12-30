@@ -1,0 +1,15 @@
+{
+    "fontName" : "Courier",
+    "fontEncoding" : "unicode",
+    "symbols" : 
+    {
+        "type" : "range",
+        "start" : 40,
+        "end" : 60
+    },
+    "symbolSize" : 
+    {
+        "width" : 40,
+        "height" : 30
+    }
+}
