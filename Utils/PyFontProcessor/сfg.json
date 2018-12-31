@@ -51,13 +51,13 @@
     "output" : 
     {
         "filesDir" : "output",
-        "filesNameFormat" : "{}.png",
+        "filesNameFormat" : "%s.png",
         "totalImage" :
         {
             "save" : true,
             "name" : "total.png",
             "imagesPerRow" : 20,
-            "separatorColor" : "00FF00"
+            "separatorColor" : "770000"
         } 
     }
 }

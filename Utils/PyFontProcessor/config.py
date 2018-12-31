@@ -30,7 +30,7 @@ class size:
         }
 
 class tiInfo:
-    def __inti__(self, save, name, imagesPerRow, sepColor):
+    def __init__(self, save, name, imagesPerRow, sepColor):
         self.save = save
         self.name = name
         self.imagesPerRow = imagesPerRow
@@ -99,7 +99,7 @@ class config:
                 save=config.get_dict_value(tiDict, config_keys.KEY_OUTPUT_TI_SAVE),
                 name=config.get_dict_value(tiDict, config_keys.KEY_OUTPUT_TI_NAME),
                 imagesPerRow=config.get_dict_value(tiDict, config_keys.KEY_OUTPUT_TI_IMAGESPERROW),
-                sepColor=config.get_dict_value(tiDict, config_keys.KEY_OUTPUT_TI_SEPCOLOR),
+                sepColor=config.get_dict_value(tiDict, config_keys.KEY_OUTPUT_TI_SEPCOLOR)
             )
         )
 
@@ -198,5 +198,6 @@ class config:
         return {
             config_keys.KEY_FONT : self.font.toJSON(),
             config_keys.KEY_SYMBOLS : self.symbols,
-            config_keys.KEY_SYMBOLSIZE : self.symbolSize.toJSON()
+            config_keys.KEY_SYMBOLSIZE : self.symbolSize.toJSON(),
+            config_keys.KEY_OUTPUT : self.output.toJSON()
         }
