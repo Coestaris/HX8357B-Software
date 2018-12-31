@@ -1,15 +1,51 @@
 {
-    "fontName" : "Courier",
-    "fontEncoding" : "unicode",
+    "font" : {
+        "encoding" : "unicode",
+
+        "size" : 10,
+
+        //Allowed types: default, system, bypath
+        //If type is "default" the default font will be using 
+        //
+        //If type is "system" you must specify string parameter 
+        //   "name" with a display font name
+        //
+        //If type is "byPath" you must spicify string parameter 
+        //   "path" with full (or relative) font path
+        "type" : "default",
+        "name" : "Courier",
+        
+        //Allowed modes: stretch, fixed, autosize
+        //  stretch - symbols will be stretched saving their ratio to specified size 
+        //  fixed - symbols will be only placed to specified rectangle
+        //  autosize - size of rectangle will be fitted to the largest symbol of the list
+        "sizeMode" : "stretch",
+        
+        //Allowed modes: centered, zero, centered_bottom
+        //  centered - center of image by X and Y
+        //  centered_bottom - center of image by X, and minimum Y
+        //  zero - upper left corner of the image
+        "positioningMode" : "centered_bottom"
+    },
+
     "symbols" : 
     {
+        //Allowed types: "range", "list"
+        //If type is range you must specify "start" and "end" 
+        //   integer parameters
+        //
+        //If type is list you must specify "list" parameter as 
+        //  list of integers
         "type" : "range",
         "start" : 40,
-        "end" : 60
+        "end" : 127
     },
+
+    //symbolSize is not necessary when "sizeMode" is "autoSize"
     "symbolSize" : 
     {
-        "width" : 40,
-        "height" : 30
-    }
+        "width" : 30,
+        "height" : 50
+    },
+
 }
