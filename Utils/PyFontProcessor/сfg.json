@@ -48,4 +48,16 @@
         "height" : 50
     },
 
+    "output" : 
+    {
+        "filesDir" : "output",
+        "filesNameFormat" : "{}.png",
+        "totalImage" :
+        {
+            "save" : true,
+            "name" : "total.png",
+            "imagesPerRow" : 20,
+            "separatorColor" : "00FF00"
+        } 
+    }
 }

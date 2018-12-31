@@ -29,6 +29,34 @@ class size:
            config_keys.KEY_SYMBOLSIZE_H : self.height
         }
 
+class tiInfo:
+    def __inti__(self, save, name, imagesPerRow, sepColor):
+        self.save = save
+        self.name = name
+        self.imagesPerRow = imagesPerRow
+        self.sepColor = sepColor
+
+    def toJSON(self):
+        return {
+            config_keys.KEY_OUTPUT_TI_NAME : self.name,
+            config_keys.KEY_OUTPUT_TI_SAVE : self.save,
+            config_keys.KEY_OUTPUT_TI_IMAGESPERROW : self.imagesPerRow,
+            config_keys.KEY_OUTPUT_TI_SEPCOLOR : self.sepColor,
+        }
+
+class outputInfo:
+    def __init__(self, filesDir, filesNameFormat, ti):
+        self.filesDir = filesDir
+        self.filesNameFormat = filesNameFormat
+        self.ti = ti
+
+    def toJSON(self):
+        return {
+           config_keys.KEY_OUTPUT_FILESDIR : self.filesDir,
+           config_keys.KEY_OUTPUT_FILESNF : self.filesNameFormat,
+           config_keys.KEY_OUTPUT_TI : self.ti.toJSON()
+        }
+
 class fontInfo:
     def __init__(self, encoding, type, id, size, sizeMode, positioning):
         self.encoding = encoding
@@ -60,6 +88,20 @@ class config:
         key = key.lower()
         if(key in dict): return dict[key]
         else: raise ParseConfigError("Unable to find key \"%s\" in dictionary" % key)
+
+    @staticmethod
+    def get_outputinfo(dict):
+        tiDict = config.get_dict_value(dict, config_keys.KEY_OUTPUT_TI)
+        return outputInfo(
+            filesDir=config.get_dict_value(dict, config_keys.KEY_OUTPUT_FILESDIR),
+            filesNameFormat=config.get_dict_value(dict, config_keys.KEY_OUTPUT_FILESNF),
+            ti=tiInfo(
+                save=config.get_dict_value(tiDict, config_keys.KEY_OUTPUT_TI_SAVE),
+                name=config.get_dict_value(tiDict, config_keys.KEY_OUTPUT_TI_NAME),
+                imagesPerRow=config.get_dict_value(tiDict, config_keys.KEY_OUTPUT_TI_IMAGESPERROW),
+                sepColor=config.get_dict_value(tiDict, config_keys.KEY_OUTPUT_TI_SEPCOLOR),
+            )
+        )
 
     @staticmethod
     def get_fontinfo(dict):
@@ -117,10 +159,11 @@ class config:
         if(dict[ config_keys.KEY_SYMBOLS_TYPE ] == config_keys.KEY_SYMBOLS_TYPE_LIST):
             return config.get_dict_value(dict, config_keys.KEY_SYMBOLS_TYPE_LIST_LIST)
 
-    def __init__(self, font = None,  symbols = {}, symbolSize = size(20, 10)):
+    def __init__(self, font = None,  symbols = {}, symbolSize = size(20, 10), output = None):
         self.font = font
         self.symbols = config.get_symbol_list(symbols)
         self.symbolSize = symbolSize
+        self.output = output
 
     @staticmethod
     def load(path):
@@ -135,7 +178,8 @@ class config:
                 return config(
                         font=config.get_fontinfo(config.get_dict_value(data, config_keys.KEY_FONT)),   
                         symbols=config.get_dict_value(data, config_keys.KEY_SYMBOLS),   
-                        symbolSize=size.parse_from_dict(config.get_dict_value(data, config_keys.KEY_SYMBOLSIZE))
+                        symbolSize=size.parse_from_dict(config.get_dict_value(data, config_keys.KEY_SYMBOLSIZE)),
+                        output=config.get_outputinfo(config.get_dict_value(data, config_keys.KEY_OUTPUT))
                     )
         
         except IOError as ex:
