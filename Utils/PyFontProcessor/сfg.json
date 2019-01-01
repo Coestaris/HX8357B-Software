@@ -4,7 +4,7 @@
         //Allowed types: fontTest, save
         //  fontTest - writes specified string to specified file using specified font
         //  save - save specified font to a new file
-        "actionType" : "fontTest",
+        "actionType" : "save",
 
         //Allowed sources: ti, images, bin, header, new
         //  ti - loads font from TotalImage using name from "newFontParameters.output.totalImage"
@@ -12,15 +12,17 @@
         //  bin - loads font from specified binary file
         //  header - loads font from specified header file
         //  new - creates new file following "newFontParameters"
-        "fontSource" : "ti",
+        "fontSource" : "new",
 
         //Path to file when using "fontSource" as "bin" or "header"
         "fontPath" : "output.h",
         
-        //Allowed types: binary, header
-        //  binary - binary file that contains font information
+        //Allowed types: bin, header, ti, images
+        //  bin - binary file that contains font information
         //  header - C header for including in main program
-        "saveAs" : "header",
+        //  ti - image that contains all font chars
+        //  images - every symbol saved as file
+        "saveAs" : "ti",
 
         //Encoding to save font. Allowed encodings: raw, rle
         //  raw - dont using any encodings: save each pixel as 1 bit

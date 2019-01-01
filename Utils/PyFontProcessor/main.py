@@ -3,26 +3,45 @@ import sys
 import json
 import logging
 
-import processor
 import config
+import config_keys
+import font
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - (%(name)s) [%(levelname)s]: %(message)s', level=logging.INFO)
 
 def main():
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger("main")
     configName = "сfg.json"
     
     if(len(sys.argv) != 1):
         configName = sys.argv[1]
     
-    logger.log(logging.INFO, "Config name is %s. Loading...", configName)
+    logger.info("Config name is %s. Loading...", configName)
     conf = config.config.load(configName)
     
     if(conf == None): return
 
-    logger.log(logging.INFO, "Conf loaded. %s", conf.toJSON())
-    
-    processor.generate_image_list(conf)
+    logger.info("Configuration file loaded")
 
+    logger.info("Loading/creating font")
+    currentFont = font.font(None)
+
+    # Loading font
+    if(conf.action.fontSource == config_keys.KEY_ACTION_FONTSOURCE_NEW):
+        currentFont = font.new(conf)
+    # ===
+
+    if(currentFont.images == None):
+        logger.error("Unable to load/create font. Cant proceed further action")
+        exit(1) 
+
+
+    # Doing action
+    if(conf.action.type == config_keys.KEY_ACTION_TYPE_FONTTEST):
+        pass
+    else:
+        if(conf.action.saveAs == config_keys.KEY_ACTION_SAVEAS_TI):
+            currentFont.save_ti(conf)
+    # ===
 if __name__ == "__main__":
     main()

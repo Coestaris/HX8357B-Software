@@ -16,13 +16,6 @@ class size:
         self.width = width
         self.height = height
 
-    @staticmethod
-    def parse_from_dict(dict):
-        return size(
-                width=dict[ config_keys.KEY_NFP_SYMBOLSIZE_W ],
-                height=dict[ config_keys.KEY_NFP_SYMBOLSIZE_H ]
-            )
-
     def toJSON(self):
         return {
            config_keys.KEY_NFP_SYMBOLSIZE_W : self.height,
@@ -69,7 +62,7 @@ class outputInfo:
         }
 
 class fontInfo:
-    def __init__(self, encoding, type, id, size, sizeMode, positioning, output, symbols):
+    def __init__(self, encoding, type, id, size, sizeMode, positioning, output, symbols, symbolSize):
         self.encoding = encoding
         self.type = type
         self.id = id
@@ -78,6 +71,7 @@ class fontInfo:
         self.positioning = positioning
         self.output = output
         self.symbols = symbols
+        self.symbolSize = symbolSize
 
     def toJSON(self):
         return {
@@ -88,7 +82,8 @@ class fontInfo:
             config_keys.KEY_NFP_SIZEMODE : self.sizeMode,
             config_keys.KEY_NFP_POSITIONING : self.positioning,
             config_keys.KEY_NFP_OUTPUT : self.output.toJSON(),
-            config_keys.KEY_NFP_SS : self.symbols
+            config_keys.KEY_NFP_SS : self.symbols,
+            config_keys.KEY_NFP_SYMBOLSIZE : self.symbolSize
         }
 
 class actionInfo:
@@ -214,6 +209,8 @@ class config:
         if(config.get_dict_value(ssdict, config_keys.KEY_NFP_SS_TYPE) == config_keys.KEY_NFP_SS_TYPE_LIST):
             rng = config.get_dict_value(ssdict, config_keys.KEY_NFP_SS_TYPE_LIST_LIST)
 
+        symbolSizeDict = config.get_dict_value(dict, config_keys.KEY_NFP_SYMBOLSIZE)
+
         return fontInfo(
                 encoding=config.get_dict_value(dict, config_keys.KEY_NFP_ENCODING),
                 type=type,
@@ -222,7 +219,12 @@ class config:
                 sizeMode=dict[config_keys.KEY_NFP_SIZEMODE],
                 positioning=dict[config_keys.KEY_NFP_POSITIONING],
                 output=config.get_outputinfo(config.get_dict_value(dict, config_keys.KEY_NFP_OUTPUT)),
-                symbols=rng)
+                symbols=rng,
+                symbolSize=size(
+                    width=config.get_dict_value(symbolSizeDict, config_keys.KEY_NFP_SYMBOLSIZE_W),
+                    height=config.get_dict_value(symbolSizeDict, config_keys.KEY_NFP_SYMBOLSIZE_H)
+                )
+            )
 
 
     def __init__(self, nfp, action):
