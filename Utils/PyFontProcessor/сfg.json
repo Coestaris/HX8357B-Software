@@ -1,7 +1,45 @@
 {
-    "font" : {
+    "action" :
+    {
+        //Allowed types: fontTest, save
+        //  fontTest - writes specified string to specified file using specified font
+        //  save - save specified font to a new file
+        "type" : "fontTest",
+
+        //Allowed sources: ti, images, bin, header, new
+        //  ti - loads font from TotalImage using name from "newFontParameters.output.totalImage"
+        //  images - loads font from files using names from "newFontParameters.output.files"
+        //  bin - loads font from specified binary file
+        //  header - loads font from specified header file
+        //  new - creates new file following "newFontParameters"
+        "fontSource" : "ti",
+
+        //Path to file when using "fontSource" as "bin" or "header"
+        "fontPath" : "output.h",
+        
+        //Allowed types: binary, header
+        //  binary - binary file that contains font information
+        //  header - C header for including in main program
+        "saveAs" : "header",
+
+        //String to write using specified font
+        "fontTestString" : "Sample Text!!!",
+
+        //Encoding to save font. Allowed encodings: raw, rle
+        //  raw - dont using any encodings: save each pixel as 1 bit
+        //  rle - Run Length Encoding
+        //  rle_sb - optimised 7-bin Run Length Encoding
+        "fonrEncoding" : "rle", 
+
+        "outputHeaderFile" : "out.h",
+        "outputBinaryFile" : "out.bin",
+        "outputFontTestOutFile" : "fontTest.png"
+    },
+    "newFontParameters" : 
+    {
         "encoding" : "unicode",
 
+        //Font size
         "size" : 10,
 
         //Allowed types: default, system, bypath
@@ -25,39 +63,47 @@
         //  centered - center of image by X and Y
         //  centered_bottom - center of image by X, and minimum Y
         //  zero - upper left corner of the image
-        "positioningMode" : "centered_bottom"
-    },
+        "positioningMode" : "centered_bottom",
 
-    "symbols" : 
-    {
+
         //Allowed types: "range", "list"
         //If type is range you must specify "start" and "end" 
         //   integer parameters
         //
         //If type is list you must specify "list" parameter as 
         //  list of integers
-        "type" : "range",
-        "start" : 40,
-        "end" : 127
-    },
+        "symbolsSequenceType" : "range",
+        "symbolsSequenceStart" : 40,
+        "symbolsSequenceEnd" : 127,
 
-    //symbolSize is not necessary when "sizeMode" is "autoSize"
-    "symbolSize" : 
-    {
-        "width" : 30,
-        "height" : 50
-    },
-
-    "output" : 
-    {
-        "filesDir" : "output",
-        "filesNameFormat" : "%s.png",
-        "totalImage" :
+         //symbolSize is not necessary when "sizeMode" is "autoSize"
+        "symbolSize" : 
         {
-            "save" : true,
-            "name" : "total.png",
-            "imagesPerRow" : 20,
-            "separatorColor" : "770000"
-        } 
-    }
+            "width" : 30,
+            "height" : 50
+        },
+
+        "output" : 
+        {
+            "outdir" : "output",
+            
+            //Save image for each char
+            "files" : 
+            {
+                "save" : false,
+                "filesNameFormat" : "%s.png",
+            },
+
+            //Save one image with all chars
+            "totalImage" :
+            {
+                "save" : true,
+                "name" : "total.png",
+                "imagesPerRow" : 20,
+                
+                //Hex color. Any color except black (000000) and white (FFFFFF)
+                "separatorColor" : "770000"
+            } 
+        },
+    },
 }
