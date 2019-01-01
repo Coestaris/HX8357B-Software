@@ -4,7 +4,7 @@
         //Allowed types: fontTest, save
         //  fontTest - writes specified string to specified file using specified font
         //  save - save specified font to a new file
-        "type" : "fontTest",
+        "actionType" : "fontTest",
 
         //Allowed sources: ti, images, bin, header, new
         //  ti - loads font from TotalImage using name from "newFontParameters.output.totalImage"
@@ -22,25 +22,26 @@
         //  header - C header for including in main program
         "saveAs" : "header",
 
-        //String to write using specified font
-        "fontTestString" : "Sample Text!!!",
-
         //Encoding to save font. Allowed encodings: raw, rle
         //  raw - dont using any encodings: save each pixel as 1 bit
         //  rle - Run Length Encoding
         //  rle_sb - optimised 7-bin Run Length Encoding
-        "fonrEncoding" : "rle", 
+        "saveFontEncoding" : "rle",
+
+        //String to write using specified font
+        "fontTestString" : "Sample Text!!!",
 
         "outputHeaderFile" : "out.h",
         "outputBinaryFile" : "out.bin",
         "outputFontTestOutFile" : "fontTest.png"
     },
+    
     "newFontParameters" : 
     {
         "encoding" : "unicode",
 
         //Font size
-        "size" : 10,
+        "fontSize" : 10,
 
         //Allowed types: default, system, bypath
         //If type is "default" the default font will be using 
@@ -50,7 +51,7 @@
         //
         //If type is "byPath" you must spicify string parameter 
         //   "path" with full (or relative) font path
-        "type" : "default",
+        "fontType" : "default",
         "name" : "Courier",
         
         //Allowed modes: stretch, fixed, autosize
@@ -65,16 +66,18 @@
         //  zero - upper left corner of the image
         "positioningMode" : "centered_bottom",
 
-
-        //Allowed types: "range", "list"
-        //If type is range you must specify "start" and "end" 
-        //   integer parameters
-        //
-        //If type is list you must specify "list" parameter as 
-        //  list of integers
-        "symbolsSequenceType" : "range",
-        "symbolsSequenceStart" : 40,
-        "symbolsSequenceEnd" : 127,
+        "symbolSequence" :
+        {
+            //Allowed types: "range", "list"
+            //If type is range you must specify "start" and "end" 
+            //   integer parameters
+            //
+            //If type is list you must specify "list" parameter as 
+            //  list of integers
+            "ssType" : "range",
+            "start" : 40,
+            "end" : 127
+        },
 
          //symbolSize is not necessary when "sizeMode" is "autoSize"
         "symbolSize" : 
@@ -90,20 +93,20 @@
             //Save image for each char
             "files" : 
             {
-                "save" : false,
-                "filesNameFormat" : "%s.png",
+                "saveFiles" : false,
+                "filesNameFormat" : "%s.png"
             },
 
             //Save one image with all chars
             "totalImage" :
             {
-                "save" : true,
-                "name" : "total.png",
+                "saveTI" : true,
+                "TIName" : "total.png",
                 "imagesPerRow" : 20,
                 
                 //Hex color. Any color except black (000000) and white (FFFFFF)
                 "separatorColor" : "770000"
             } 
-        },
-    },
+        }
+    }
 }
