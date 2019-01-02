@@ -24,24 +24,28 @@ def main():
     logger.info("Configuration file loaded")
 
     logger.info("Loading/creating font")
-    currentFont = font.font(None)
+    currentFont = font.font(None, None)
 
     # Loading font
     if(conf.action.fontSource == config_keys.KEY_ACTION_FONTSOURCE_NEW):
         currentFont = font.new(conf)
     # ===
 
-    if(currentFont.images == None):
+    if(currentFont == None or currentFont.images == None):
         logger.error("Unable to load/create font. Cant proceed further action")
-        exit(1) 
+        return
 
 
     # Doing action
     if(conf.action.type == config_keys.KEY_ACTION_TYPE_FONTTEST):
-        pass
+        currentFont.fonttest(conf)
+
     else:
         if(conf.action.saveAs == config_keys.KEY_ACTION_SAVEAS_TI):
             currentFont.save_ti(conf)
+        elif(conf.action.saveAs == config_keys.KEY_ACTION_SAVEAS_IMAGES):
+            currentFont.save_images(conf)
+
     # ===
 if __name__ == "__main__":
     main()

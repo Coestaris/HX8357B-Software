@@ -4,7 +4,7 @@
         //Allowed types: fontTest, save
         //  fontTest - writes specified string to specified file using specified font
         //  save - save specified font to a new file
-        "actionType" : "save",
+        "actionType" : "",
 
         //Allowed sources: ti, images, bin, header, new
         //  ti - loads font from TotalImage using name from "newFontParameters.output.totalImage"
@@ -12,102 +12,102 @@
         //  bin - loads font from specified binary file
         //  header - loads font from specified header file
         //  new - creates new file following "newFontParameters"
-        "fontSource" : "new",
+        "fontSource" : "",
 
         //Path to file when using "fontSource" as "bin" or "header"
-        "fontPath" : "output.h",
+        "fontPath" : "",
         
         //Allowed types: bin, header, ti, images
         //  bin - binary file that contains font information
         //  header - C header for including in main program
         //  ti - image that contains all font chars
         //  images - every symbol saved as file
-        "saveAs" : "ti",
+        "saveAs" : "",
 
         //Encoding to save font. Allowed encodings: raw, rle
         //  raw - dont using any encodings: save each pixel as 1 bit
         //  rle - Run Length Encoding
         //  rle_sb - optimised 7-bin Run Length Encoding
-        "saveFontEncoding" : "rle",
+        "saveFontEncoding" : "",
 
         //String to write using specified font
-        "fontTestString" : "Sample Text!!!",
+        "fontTestString" : "",
 
-        "outputHeaderFile" : "out.h",
-        "outputBinaryFile" : "out.bin",
-        "outputFontTestOutFile" : "fontTest.png"
+        "outputHeaderFile" : "",
+        "outputBinaryFile" : "",
+        "outputFontTestOutFile" : ""
     },
     
     "newFontParameters" : 
     {
-        "encoding" : "unicode",
+        //Common encodings are “unic” (Unicode), “symb” (Microsoft Symbol), 
+        //“ADOB” (Adobe Standard), “ADBE” (Adobe Expert), and “armn” (Apple Roman). 
+        //See the FreeType documentation for more information.
+        "encoding" : "",
 
         //Font size
-        "fontSize" : 10,
+        "fontSize" : 0,
 
-        //Allowed types: default, system, bypath
-        //If type is "default" the default font will be using 
-        //
-        //If type is "system" you must specify string parameter 
-        //   "name" with a display font name
-        //
-        //If type is "byPath" you must spicify string parameter 
-        //   "path" with full (or relative) font path
-        "fontType" : "default",
-        "name" : "Courier",
+        //Allowed types: default, ttf, bitmap
+        "fontType" : "",
+        "name" : "",
         
         //Allowed modes: stretch, fixed, autosize
         //  stretch - symbols will be stretched saving their ratio to specified size 
         //  fixed - symbols will be only placed to specified rectangle
         //  autosize - size of rectangle will be fitted to the largest symbol of the list
-        "sizeMode" : "stretch",
+        "sizeMode" : "",
         
         //Allowed modes: centered, zero, centered_bottom
         //  centered - center of image by X and Y
         //  centered_bottom - center of image by X, and minimum Y
         //  zero - upper left corner of the image
-        "positioningMode" : "centered_bottom",
+        "positioningMode" : "",
 
         "symbolSequence" :
         {
+            //Char that will be used for urecognised symbols
+            "nullChar" : 0,
+
             //Allowed types: "range", "list"
             //If type is range you must specify "start" and "end" 
             //   integer parameters
             //
             //If type is list you must specify "list" parameter as 
             //  list of integers
-            "ssType" : "range",
-            "start" : 40,
-            "end" : 127
+            "ssType" : "",
+            "start" : 0,
+            "end" : 0
         },
 
          //symbolSize is not necessary when "sizeMode" is "autoSize"
         "symbolSize" : 
         {
-            "width" : 30,
-            "height" : 50
+            "width" : 0,
+            "height" : 0
         },
 
         "output" : 
         {
-            "outdir" : "output",
-            
+            "outdir" : "",
+            "fontCacheFile" : "",
+
             //Save image for each char
             "files" : 
             {
                 "saveFiles" : false,
-                "filesNameFormat" : "%s.png"
+                "filesNameFormat" : ""
             },
 
             //Save one image with all chars
             "totalImage" :
             {
-                "saveTI" : true,
-                "TIName" : "total.png",
-                "imagesPerRow" : 20,
+                "saveTI" : false,
+                "TIName" : "",
+                "imagesPerRow" : 0,
                 
                 //Hex color. Any color except black (000000) and white (FFFFFF)
-                "separatorColor" : "770000"
+                "separatorColor" : ""
             } 
         }
     }

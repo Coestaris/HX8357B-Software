@@ -1,0 +1,61 @@
+{
+    "action" :
+    {
+        //Allowed types: fontTest, save
+        "actionType" : "fontTest",
+        //Allowed sources: ti, images, bin, header, new
+        "fontSource" : "new",
+        "fontPath" : "output.h",
+        //Allowed types: bin, header, ti, images
+        "saveAs" : "ti",
+        //Encoding to save font. Allowed encodings: raw, rle
+        "saveFontEncoding" : "rle",
+        "fontTestString" : "Sample string",
+        "outputHeaderFile" : "out.h",
+        "outputBinaryFile" : "out.bin",
+        "outputFontTestOutFile" : "fontTest.png"
+    },
+    
+    "newFontParameters" : 
+    {
+        "encoding" : "unic",
+        "fontSize" : 12,
+        //Allowed types: default, ttf, bitmap
+        "fontType" : "ttf",
+        "name" : "C:/Windows/Fonts/consola.ttf",
+        //Allowed modes: stretch, fixed, autosize
+        "sizeMode" : "stretch",
+        //Allowed modes: centered, zero, centered_bottom
+        "positioningMode" : "centered",
+        "symbolSequence" :
+        {
+            "nullChar" : 63,
+            //Allowed types: "range", "list"
+            "ssType" : "range",
+            "start" : 32,
+            "end" : 127
+        },
+        "symbolSize" : 
+        {
+            "width" : 32,
+            "height" : 50
+        },
+        "output" : 
+        {
+            "outdir" : "output",
+            "fontCacheFile" : "fcache.json",
+            "files" : 
+            {
+                "saveFiles" : false,
+                "filesNameFormat" : "%s.png"
+            },
+            "totalImage" :
+            {
+                "saveTI" : true,
+                "TIName" : "total.png",
+                "imagesPerRow" : 20,
+                "separatorColor" : "770000"
+            } 
+        }
+    }
+}

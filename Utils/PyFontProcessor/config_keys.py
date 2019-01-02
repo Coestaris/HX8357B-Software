@@ -34,8 +34,8 @@ KEY_NFP_ENCODING = "encoding"
 KEY_NFP_SIZE = "fontsize"
 KEY_NFP_TYPE = "fonttype"
 KEY_NFP_TYPE_DEFAULT = "default"
-KEY_NFP_TYPE_SYSTEM = "system"
-KEY_NFP_TYPE_BYPATH = "bypath"
+KEY_NFP_TYPE_TTF = "ttf"
+KEY_NFP_TYPE_BITMAP = "bitmap"
 KEY_NFP_NAME = "name"
 KEY_NFP_PATH = "name"
 KEY_NFP_SIZEMODE = "sizemode"
@@ -49,6 +49,7 @@ KEY_NFP_POSITIONING_ZERO = "zero"
 
 KEY_NFP_SS = "symbolsequence"
 KEY_NFP_SS_TYPE = "sstype"
+KEY_NFP_SS_NULLCHAR = "nullchar"
 KEY_NFP_SS_TYPE_RANGE = "range"
 KEY_NFP_SS_TYPE_LIST = "list"
 KEY_NFP_SS_TYPE_RANGE_START = "start"
@@ -59,9 +60,9 @@ KEY_NFP_SYMBOLSIZE = "symbolSize"
 KEY_NFP_SYMBOLSIZE_W = "width"
 KEY_NFP_SYMBOLSIZE_H = "height"
 
-
 KEY_NFP_OUTPUT = "output"
 KEY_NFP_OUTPUT_OUTDIR = "outdir"
+KEY_NFP_OUTPUT_CACHEFN = "fontCacheFile"
 KEY_NFP_OUTPUT_FILES = "files"
 
 KEY_NFP_OUTPUT_FILES_SAVE = "savefiles"
@@ -81,8 +82,8 @@ allowed_fontpositioning = [
 
 allowed_fonttypes = [
     KEY_NFP_TYPE_DEFAULT,
-    KEY_NFP_TYPE_SYSTEM,
-    KEY_NFP_TYPE_BYPATH,
+    KEY_NFP_TYPE_TTF,
+    KEY_NFP_TYPE_BITMAP,
 ]
 
 allowed_fontmodes = [

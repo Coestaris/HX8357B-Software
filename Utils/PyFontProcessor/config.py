@@ -1,7 +1,7 @@
 import json
-import re
 import logging
 
+import helpers
 import config_keys
 
 class ParseConfigError(Exception):
@@ -49,20 +49,25 @@ class filesInfo:
         }
 
 class outputInfo:
-    def __init__(self, outdir, files, ti):
+    def __init__(self, outdir, files, ti, cacheFn):
         self.outdir = outdir
         self.files = files
         self.ti = ti
+        self.cacheFn = cacheFn
 
     def toJSON(self):
         return {
             config_keys.KEY_NFP_OUTPUT_OUTDIR : self.outdir,
             config_keys.KEY_NFP_OUTPUT_FILES : self.files.toJSON(),
-            config_keys.KEY_NFP_OUTPUT_TI : self.ti.toJSON()
+            config_keys.KEY_NFP_OUTPUT_TI : self.ti.toJSON(),
+            config_keys.KEY_NFP_OUTPUT_CACHEFN : self.cacheFn
         }
 
-class fontInfo:
-    def __init__(self, encoding, type, id, size, sizeMode, positioning, output, symbols, symbolSize):
+    def makePath(self, str):
+        return "%s/%s" % (self.outdir, str)
+
+class nfpInfo:
+    def __init__(self, encoding, type, id, size, sizeMode, positioning, output, symbols, symbolSize, nullChar):
         self.encoding = encoding
         self.type = type
         self.id = id
@@ -72,6 +77,7 @@ class fontInfo:
         self.output = output
         self.symbols = symbols
         self.symbolSize = symbolSize
+        self.nullChar = nullChar
 
     def toJSON(self):
         return {
@@ -83,7 +89,8 @@ class fontInfo:
             config_keys.KEY_NFP_POSITIONING : self.positioning,
             config_keys.KEY_NFP_OUTPUT : self.output.toJSON(),
             config_keys.KEY_NFP_SS : self.symbols,
-            config_keys.KEY_NFP_SYMBOLSIZE : self.symbolSize
+            config_keys.KEY_NFP_SYMBOLSIZE : self.symbolSize,
+            config_keys.KEY_NFP_SS_NULLCHAR : self.nullChar
         }
 
 class actionInfo:
@@ -112,11 +119,6 @@ class actionInfo:
             config_keys.KEY_ACTION_OUT_TEST: self.output_test,
             
         }
-
-def removeComments(string):
-    string = re.sub(re.compile(r"/\*.*?\*/", re.DOTALL), "", string) # remove all occurance streamed comments (/*COMMENT */) from string
-    string = re.sub(re.compile(r"//.*?\n"), "", string) # remove all occurance singleline comments (//COMMENT\n ) from string
-    return string
 
 class config:
     
@@ -159,6 +161,7 @@ class config:
 
         return outputInfo(
             outdir=config.get_dict_value(dict, config_keys.KEY_NFP_OUTPUT_OUTDIR),
+            cacheFn=config.get_dict_value(dict, config_keys.KEY_NFP_OUTPUT_CACHEFN),
             files= filesInfo(
                 save=config.get_dict_value(fiDict, config_keys.KEY_NFP_OUTPUT_FILES_SAVE),
                 fnf=config.get_dict_value(fiDict, config_keys.KEY_NFP_OUTPUT_FILES_FNF)
@@ -183,13 +186,9 @@ class config:
         id = None
         type = config_keys.KEY_NFP_TYPE_DEFAULT
 
-        if(config.get_dict_value(dict, config_keys.KEY_NFP_TYPE) == config_keys.KEY_NFP_TYPE_SYSTEM):
+        if(config.get_dict_value(dict, config_keys.KEY_NFP_TYPE) != config_keys.KEY_NFP_TYPE_DEFAULT):
             id = config.get_dict_value(dict, config_keys.KEY_NFP_NAME)
-            type = config_keys.KEY_NFP_TYPE_SYSTEM
-
-        if(config.get_dict_value(dict, config_keys.KEY_NFP_TYPE) == config_keys.KEY_NFP_TYPE_BYPATH):
-            id = config.get_dict_value(dict, config_keys.KEY_NFP_PATH)
-            type = config_keys.KEY_NFP_TYPE_BYPATH
+            type = config.get_dict_value(dict, config_keys.KEY_NFP_TYPE)
 
         if(config.get_dict_value(dict, config_keys.KEY_NFP_POSITIONING) not in config_keys.allowed_fontpositioning):
             raise ParseConfigError("\"%s\" is not allowed value for \"%s\""  % (dict[config_keys.KEY_NFP_POSITIONING ], config_keys.KEY_NFP_POSITIONING))
@@ -211,7 +210,7 @@ class config:
 
         symbolSizeDict = config.get_dict_value(dict, config_keys.KEY_NFP_SYMBOLSIZE)
 
-        return fontInfo(
+        return nfpInfo(
                 encoding=config.get_dict_value(dict, config_keys.KEY_NFP_ENCODING),
                 type=type,
                 id=id,
@@ -223,7 +222,8 @@ class config:
                 symbolSize=size(
                     width=config.get_dict_value(symbolSizeDict, config_keys.KEY_NFP_SYMBOLSIZE_W),
                     height=config.get_dict_value(symbolSizeDict, config_keys.KEY_NFP_SYMBOLSIZE_H)
-                )
+                ),
+                nullChar=config.get_dict_value(ssdict, config_keys.KEY_NFP_SS_NULLCHAR)
             )
 
 
@@ -238,7 +238,7 @@ class config:
         try:
             with open(path, encoding="utf8") as f:
 
-                input_str = removeComments(f.read().lower())
+                input_str = helpers.removeComments(f.read().lower())
 
                 data = json.loads(input_str)
                 return config(
