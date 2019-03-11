@@ -50,10 +50,17 @@ class font:
                 x = 0
 
             else:
-                if(ord(char) in self.cache.charDict): imToCopy = self.images[self.cache.charDict[ord(char)]]
-                else: imToCopy = self.images[self.cache.charDict[self.cache.nullChar]]
+                try:
+                    if(ord(char) in self.cache.charDict): 
+                        imToCopy = self.images[self.cache.charDict[ord(char)]]
+                    else: 
+                        imToCopy = self.images[self.cache.charDict[self.cache.nullChar]]
 
-                im.paste(imToCopy, (x, y))
+                    im.paste(imToCopy, (x, y))
+                
+                except Exception as ex:
+                    logger.error("%s" % ex)
+                
                 x += imsize[0] + xspacing
             
         try:
@@ -91,8 +98,9 @@ class font:
         for index, val in enumerate(config.nfp.symbols):
             ti.paste(self.images[index], (xC * (imSize[0] + 1), yC * (imSize[1] + 1)))
             
-            if((index) % config.nfp.output.ti.imagesPerRow == 0 and index != 0): xC, yC = 0, yC + 1
-            else: xC += 1
+            xC += 1
+            if((index + 1) % (config.nfp.output.ti.imagesPerRow) == 0 and index != 0): 
+                xC, yC = 0, yC + 1
         try:
             ti.save(config.nfp.output.makePath(config.nfp.output.ti.name))
         except Exception as ex:
@@ -110,7 +118,44 @@ class font:
         return ti
 
 def load_ti(config):
-    pass
+    logger = logging.getLogger("font:load:ti")
+    im = None
+    cache = None
+
+    logger.info("Opening image")
+    try:
+        im = Image.open(config.nfp.output.makePath(config.nfp.output.ti.name))
+    except Exception as ex:
+        logger.error("Unable to load file \"%s\"\nError %s" % (config.nfp.output.makePath(config.nfp.output.ti.name), ex))
+        return None
+
+    logger.info("Loading cache")
+    try:
+        cache = fontcache.fontcache.load(config.nfp.output.makePath(config.nfp.output.cacheFn))
+    except Exception as ex:
+        logger.error("Unable to load cache \"%s\"\nError %s" % (config.nfp.output.makePath(config.nfp.output.cacheFn), ex))
+        return None
+
+    images = []
+    for index, char in enumerate(cache.charDict):
+        
+        xoff = index % cache.imagesPerRow
+        yoff = index // cache.imagesPerRow
+
+        nim = Image.new('1', cache.charSize)
+
+        cropped = im.crop( 
+        ( 
+            xoff * (cache.charSize[0] + 1),
+            yoff * (cache.charSize[1] + 1),
+            (xoff + 1) * (cache.charSize[0] + 1),
+            (yoff + 1) * (cache.charSize[1] + 1),
+        ))
+        cropped.load()
+        nim.paste(cropped)
+        images.append(nim)
+
+    return font(images, cache)
 
 def new(config):
     logger = logging.getLogger("font:new")
@@ -179,9 +224,10 @@ def new(config):
         charDict.update({ charCode : index })
 
     cache = fontcache.fontcache(
-        nullChar=config.nfp.nullChar,
+        nullChar = config.nfp.nullChar,
         charDict = charDict,
-        charSize = size
+        charSize = size,
+        imagesPerRow = config.nfp.output.ti.imagesPerRow
     )
 
     logger.info("Generating done")

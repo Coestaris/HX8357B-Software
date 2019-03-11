@@ -124,7 +124,6 @@ class config:
     
     @staticmethod
     def get_dict_value(dict, key):
-        key = key.lower()
         if(key in dict): return dict[key]
         else: raise ParseConfigError("Unable to find key \"%s\" in dictionary" % key)
 
@@ -238,7 +237,7 @@ class config:
         try:
             with open(path, encoding="utf8") as f:
 
-                input_str = helpers.removeComments(f.read().lower())
+                input_str = helpers.removeComments(f.read())
 
                 data = json.loads(input_str)
                 return config(

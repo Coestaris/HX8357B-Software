@@ -4,13 +4,15 @@
         //Allowed types: fontTest, save
         "actionType" : "fontTest",
         //Allowed sources: ti, images, bin, header, new
-        "fontSource" : "new",
+        "fontSource" : "ti",
+
+        
         "fontPath" : "output.h",
         //Allowed types: bin, header, ti, images
         "saveAs" : "ti",
         //Encoding to save font. Allowed encodings: raw, rle
         "saveFontEncoding" : "rle",
-        "fontTestString" : "Sample string",
+        "fontTestString" : "\n\n\nPack my box with five dozen liquor jugs\npACK MY BOX WITH FIVE DOZEN LIQUOR JUGS\n1234 plus 56789 is 58023!! AWESOME!1)\n\n\n",
         "outputHeaderFile" : "out.h",
         "outputBinaryFile" : "out.bin",
         "outputFontTestOutFile" : "fontTest.png"
@@ -19,12 +21,12 @@
     "newFontParameters" : 
     {
         "encoding" : "unic",
-        "fontSize" : 12,
+        "fontSize" : 18,
         //Allowed types: default, ttf, bitmap
-        "fontType" : "ttf",
+        "fontType" : "default",
         "name" : "C:/Windows/Fonts/consola.ttf",
         //Allowed modes: stretch, fixed, autosize
-        "sizeMode" : "stretch",
+        "sizeMode" : "autosize",
         //Allowed modes: centered, zero, centered_bottom
         "positioningMode" : "centered",
         "symbolSequence" :

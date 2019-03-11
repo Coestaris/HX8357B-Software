@@ -29,12 +29,13 @@ def main():
     # Loading font
     if(conf.action.fontSource == config_keys.KEY_ACTION_FONTSOURCE_NEW):
         currentFont = font.new(conf)
+    elif(conf.action.fontSource == config_keys.KEY_ACTION_FONTSOURCE_TI):
+        currentFont = font.load_ti(conf)
     # ===
 
     if(currentFont == None or currentFont.images == None):
         logger.error("Unable to load/create font. Cant proceed further action")
         return
-
 
     # Doing action
     if(conf.action.type == config_keys.KEY_ACTION_TYPE_FONTTEST):
